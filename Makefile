@@ -1,9 +1,22 @@
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    Makefile                                           :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2026/03/21 21:08:23 by cwannhed          #+#    #+#              #
+#    Updated: 2026/03/21 21:40:52 by cwannhed         ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
+
 NAME = ircserv
 
 CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror -Wshadow -std=c++98
 
-SRC = main.cpp
+SRC = main.cpp \
+	Server.cpp
 
 all: $(NAME)
 

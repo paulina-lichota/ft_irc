@@ -3,39 +3,33 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 15:28:50 by plichota          #+#    #+#             */
-/*   Updated: 2026/02/20 15:32:27 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/21 21:35:47 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <iostream>
-#include <string>
-
-
-void init(std::string port, std::string password)
-{
-    if (port.empty() || password.empty())
-    {
-        std::cerr << "Error: Port and password must not be empty." << std::endl;
-        return;
-    }
-    // parse port
-
-    // parse password
-    
-    std::cout << "Initializing server on port " << port << std::endl;
-    // call server connection
-}
+#include "includes.hpp"
+#include "Server.hpp"
 
 // ./ircserv <port> <password>
-int main(int argc, char **argv)
-{
-    if (argc != 3)
-    {
-        std::cout << "Usage: " << argv[0] << " <port> <password>" << std::endl;
-        return (0);
-    }
-    init(argv[1], argv[2]);
+int main(int argc, char **argv) {
+	if (argc != 3) {
+		std::cerr << "Usage: " << argv[0] << " <port> <password>" << std::endl;
+		return (1);
+	}
+	try {
+		if (!Server::isValidPort(argv[1]))
+			throw std::invalid_argument("Error: invalid port.");
+		if (!Server::isValidPassword(argv[2]))
+			throw std::invalid_argument("Error: invalid password.");
+		//Server server(std::atoi(argv[1]), argv[2]);
+		//server.run();
+	}
+	catch (std::exception &e) {
+		std::cerr << e.what() << std::endl;
+		return (1);
+	}
+	return (0);
 }
