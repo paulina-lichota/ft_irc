@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/21 21:39:29 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/22 13:42:56 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 class Server {
 private:
 	int			_port;
-	std::string	_password;
+	std::string	_password; //PASS mypassword -> mypassword == _passoword, altrimenti connessione rifiutata
 public:
 	Server(const int port, const std::string &password);
 	~Server();

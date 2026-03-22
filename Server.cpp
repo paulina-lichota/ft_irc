@@ -6,13 +6,19 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:26:11 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/21 22:18:36 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/22 14:01:02 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
-Server::Server(const int port, const std::string &password) : _port(port), _password(password) {}
+Server::Server(const int port, const std::string &password) : _port(port), _password(password) {
+	//setup server
+
+	//creo socket (fd)
+	//associo socket - port con bind()
+	//server pronto ad ascoltare
+}
 
 Server::~Server() {}
 
@@ -26,18 +32,19 @@ Server::~Server() {}
 // recv() legge i dati arrivati su un socket e li mette in un buffer
 
 void	Server::run(){
-	//setup server
-	
-	//loop con poll
+
+	//loop con poll() che aspetta eventi sugli fd aperti
+	// se fd nuovo client
+		// -> accept(), crea nuovo socket decato a questo client
+		// nuova istanza di Client che salvo in una struttura in Server?
 		//se fd è gia client
 			//-> recv()
 			//-> estraggo mesaggio completo
 			//-> gestisco messaggio
-		// se fd nuovo client
-			// -> accept()
-			// nuova istanza di Client che salvo in una struttura in Server?
-		// gestione errore
+		// gestione errore / disconnessione
 			// disconnessione + rimuover client dalla struttra in server
+			// chiudere socket
+			// togliere client dai canali
 
 }
 
@@ -56,6 +63,7 @@ bool	Server::isValidPort(const std::string &port) {
 	return (port_num > 1024 && port_num <= 65535);
 }
 
+//criteri per password?? no spazi?
 bool	Server::isValidPassword(const std::string &password) {
 	if (password.empty())
 		return (false);
