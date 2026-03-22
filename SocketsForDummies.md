@@ -30,7 +30,7 @@ Data now travels **across the network** instead of staying in the same machine.
 
 
 ## How data travels across the network?
-
+### Sending data
 Data becomes a **stream of bytes**, which travels across the network.
 
 > Basically, you want to send a book by mail.
@@ -38,25 +38,43 @@ Data becomes a **stream of bytes**, which travels across the network.
 > You split a whole book into a lot of envelopes,
 > each one containing a page, the page number and the address.
 
-You send data by writing to a socket:
+You send data by writing to a socket in your program:
 ` write(fd, "JOIN #42\r\n", 10) `
 Now you have 10 bytes of raw data that goes to the kernel's write buffer.
 
 > The envelopes are special: they are layered.
 > Like a box into a box into a box.
 
-The kernel **wraps the packet** with some headers in this order:
-- **TCP** layer: source port, destination port, sequence number (_"the page number"_)
-- **IP** layer: source IP, destination IP (_"the address"_)
-- **Ethernet/WiFi** layer: source MAC, destination MAC (_"the mailman"_)
+The kernel **wraps the data** with some headers in this order:
+1. **TCP** layer: source port, destination port, sequence number (_"the page number"_) and **flags** (control signals: SYN, ACK, FIN, RST)
+2. **IP** layer: source IP, destination IP (_"the address"_)
+3. **Ethernet/WiFi** layer: source MAC, destination MAC (_"the mailman"_)
+
+> Flags tell the kernel **how to interpret** the rest of the packet
 
 **✨ Now our packet is ready to travel across the network ✨**
 
+### Receiving data
+***On the other side***, when a packet arrives (physical signal),
+the network card (**NIC**, _scheda di rete_) unwraps the first layer:
+- **Ethernet/WiFi**: is this MAC address mine?
+    - Yes → sends an **interrupt** to the kernel
+    - No → packet discarded silently, kernel never knows
 
-### On the other side
-***On the other side***, the kernel (always listening - no need for a program) receives the packet and unwraps it in reverse.
-When a packet arrives, the network card (**NIC**, _scheda di rete_) tells to the kernel "Hey, I got a packet!". This is called an **interrupt**, a hardware event that the kernel can react to.
+The kernel receives the **interrupt**, stops for a moment,
+and unwraps remaining layers:
+- **IP** → is this IP address mine?
+    - Yes → continue
+    - No → discard
+- **TCP** → reads the ports and checks the flags.
+    What happens next depends on the flags.
 
-The kernel stops for a moment, unwraps the packet and looks for the destination port. Now we have 2 scenarios:
-1. If a socket is listening on that port, the kernel takes the raw data and puts it in the socket's buffer.
-2. If no socket is listening on that port, IT THROWS THE PACKET. the kernel sends an ICMP **"port unreachable"** message to the sender.
+Let's say the flag is **ACK + data**.
+The kernel strips the headers and puts the **raw bytes** into the **read buffer** of the socket.
+Our program has a `poll()` running, that watches for any event on the socket.
+Now we are sure that there is some data in the socket.
+Our program can read the data with `read(fd, buffer, 10)`.
+
+> `poll()` just checks for incoming events from a list of fds.
+
+## Handshake
