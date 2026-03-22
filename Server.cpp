@@ -3,18 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:26:11 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/22 20:03:18 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/22 21:44:01 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
 Server::Server(const int port, const std::string &password) : _port(port), _password(password) {
-	//setup server
-
 	//creo socket (fd) (unico scopo: accettare nuove connessioni)
 	//socket() alloca un nuovo socket nel kernel e ritorna il file descriptor
 	//setsockopt() con SO_REUSEADDR permette il riuso immediato della porta (latirmenti rimane bloccata per 60 sec)
@@ -34,10 +32,39 @@ Server::~Server() {}
 // poll() + recv() (in questo ordine)
 // recv() legge i dati arrivati su un socket e li mette in un buffer
 
-// Loop di ascolto dei client
-void	Server::run(){
 
-	//loop con poll() che aspetta eventi sugli fd aperti (multiplexing)
+/*
+	poll() e' una funziona bloccante, si ferma finche' non succede un evento
+	ma ha un parametro timeout che cambia il suo comportamento:
+
+	timeout = -1 → aspetta all'infinito, ritorna solo quando succede qualcosa
+	timeout = 0 → non aspetta per niente, controlla e ritorna subito (non-bloccante ma consuma piu' CPU)
+	timeout = 5000 → aspetta massimo 5 secondi, poi ritorna comunque (anche se non accade niente)
+*/
+/*
+	_fds e' un vector di <struct pollfd>.
+	Nella struct prima si definisce l'fd da monitorare e l'event da ascoltare.
+	poll() mette gli eventi passati in _fd[].revents (anche alcuni non richiesti)
+	I tipi di evento sono:
+	POLLIN → ci sono dati da leggere (o una nuova connessione sul server socket)
+	POLLHUP → il client si è disconnesso
+	POLLERR → errore sul fd
+	C'e' anche:
+	POLLOUT → scrivere senza bloccarti -> serve quando buffer scrittura pieno
+*/
+void	Server::run(){
+	const int timeout = -1; // aspetta eventi all'infinito
+	// loop con poll() che aspetta eventi sugli fd aperti (multiplexing)
+	while (true)
+	{
+		poll(&_fds[0], _fds.size(), timeout);
+		// qui poll e' ritornato perche' e' successo qualcosa
+
+		for (size_t i = 0; i < _fds.size(); i++)
+		{
+			// controllo revents per ogni fd
+		}	
+	}
 	// se fd nuovo client + POLLIN (ci sono dati da leggere)
 		// handshake (PASS, NICK, USER)
 		// -> accept(), crea nuovo socket decato a questo client
@@ -50,7 +77,6 @@ void	Server::run(){
 			// disconnessione + rimuover client dalla struttra in server
 			// chiudere socket
 			// togliere client dai canali
-
 }
 
 /* -------------------------------------------------------------------------- */

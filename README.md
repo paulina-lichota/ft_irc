@@ -45,6 +45,3 @@ If the client sends a PING command, the server responds with a PONG command.
 If the client sends a JOIN command, the server creates a new channel and associates it with the client.
 If the client sends a PART command, the server removes the channel from the client's list of channels.
 If the client sends a QUIT command, the server closes the connection to the client.
-
-# TODO
-- setup server: 

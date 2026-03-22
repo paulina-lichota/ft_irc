@@ -81,8 +81,5 @@ Our program can read the data with `read(fd, buffer, 10)`.
 
 ## Handshake
 
+TCP is a **connection-oriented protocol**, which means that the client must send a message to the server to confirm its identity before it can receive any data.
 
-### Da approfondire
-- handshake
-- POLLIN flag in poll()
-- struct pollfd
