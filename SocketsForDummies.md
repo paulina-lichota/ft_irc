@@ -1,5 +1,6 @@
 # Sockets For Dummies
 
+## What is a socket?
 A socket is a **file descriptor** that can be used to
 send and receive data over the network.
 
@@ -30,6 +31,7 @@ Data now travels **across the network** instead of staying in the same machine.
 
 
 ## How data travels across the network?
+
 ### Sending data
 Data becomes a **stream of bytes**, which travels across the network.
 
@@ -78,3 +80,9 @@ Our program can read the data with `read(fd, buffer, 10)`.
 > `poll()` just checks for incoming events from a list of fds.
 
 ## Handshake
+
+
+### Da approfondire
+- handshake
+- POLLIN flag in poll()
+- struct pollfd
