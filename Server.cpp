@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:26:11 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/22 14:01:02 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/22 16:19:45 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,11 @@
 Server::Server(const int port, const std::string &password) : _port(port), _password(password) {
 	//setup server
 
-	//creo socket (fd)
-	//associo socket - port con bind()
+	//creo socket (fd) (unico scopo: accettare nuove connessioni)
+	//socket() alloca un nuovo socket nel kernel e ritorna il file descriptor
+	//setsockopt() con SO_REUSEADDR permette il riuso immediato della porta (latirmenti rimane bloccata per 60 sec)
+	//associo socket - indirizzo locale (ip + port) con bind()
+	//metto il socket in stato listen ()
 	//server pronto ad ascoltare
 }
 
@@ -33,11 +36,12 @@ Server::~Server() {}
 
 void	Server::run(){
 
-	//loop con poll() che aspetta eventi sugli fd aperti
-	// se fd nuovo client
+	//loop con poll() che aspetta eventi sugli fd aperti (multiplexing)
+	// se fd nuovo client + POLLIN (ci sono dati da leggere)
+		// handshake (PASS, NICK, USER)
 		// -> accept(), crea nuovo socket decato a questo client
 		// nuova istanza di Client che salvo in una struttura in Server?
-		//se fd è gia client
+		//se fd è gia client + POLLIN
 			//-> recv()
 			//-> estraggo mesaggio completo
 			//-> gestisco messaggio

@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/22 13:42:56 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/22 16:35:03 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,11 +14,15 @@
 # define SERVER_HPP
 
 # include "includes.hpp"
+# include "Client.hpp"
 
 class Server {
 private:
-	int			_port;
-	std::string	_password; //PASS mypassword -> mypassword == _passoword, altrimenti connessione rifiutata
+	int							_port;
+	std::string					_password; //PASS mypassword -> mypassword == _passoword, altrimenti connessione rifiutata
+	int							_serverFd;
+	std::vector<struct pollfd>	_fds;
+	std::map<int, Client>		_clients; //associazione fd -> oggetto client
 public:
 	Server(const int port, const std::string &password);
 	~Server();
@@ -28,7 +32,13 @@ public:
 	static bool	isValidPassword(const std::string &password);
 };
 
-
-
+//struct pollfd è una struttura dati del sistema operativo che contiene il file descriptor da osservare,
+//la maschera degli eventi di interesse e la maschera degli eventi che si sono verificati.
+//Viene passata a poll() come array per il monitoraggio simultaneo di più fd.
+// struct pollfd {
+//     int   fd;       // quale fd monitorare
+//     short events;   // cosa vuoi sapere (es. POLLIN)
+//     short revents;  // cosa è successo (lo riempie poll())
+// };
 
 #endif

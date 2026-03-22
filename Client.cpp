@@ -1,22 +1,21 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   includes.hpp                                       :+:      :+:    :+:   */
+/*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/03/21 21:17:58 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/22 16:33:15 by cwannhed         ###   ########.fr       */
+/*   Created: 2026/03/22 16:24:21 by cwannhed          #+#    #+#             */
+/*   Updated: 2026/03/22 16:24:34 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef INCLUDES_HPP
-# define INCLUDES_HPP
+#include "Client.hpp"
 
-# include <string>
-# include <iostream>
-# include <cstdlib>
-# include <map>
-# include <vector>
+Client::Client(/* args */)
+{
+}
 
-#endif
+Client::~Client()
+{
+}
