@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/22 16:35:03 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/22 17:03:24 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,19 +17,20 @@
 # include "Client.hpp"
 
 class Server {
-private:
-	int							_port;
-	std::string					_password; //PASS mypassword -> mypassword == _passoword, altrimenti connessione rifiutata
-	int							_serverFd;
-	std::vector<struct pollfd>	_fds;
-	std::map<int, Client>		_clients; //associazione fd -> oggetto client
-public:
-	Server(const int port, const std::string &password);
-	~Server();
+	private:
+		int							_port;
+		std::string					_password; // PASS mypassword -> mypassword == _passoword, altrimenti connessione rifiutata
 
-	void	run();
-	static bool	isValidPort(const std::string &port);
-	static bool	isValidPassword(const std::string &password);
+		int							_serverFd; // socket del server (ascolta nuovi client)
+		std::vector<struct pollfd>	_fds;	   // array di fd dei clients da monitorare
+		std::map<int, Client>		_clients;  // associazione fd -> oggetto client
+	public:
+		Server(const int port, const std::string &password);
+		~Server();
+
+		void	run();
+		static bool	isValidPort(const std::string &port);
+		static bool	isValidPassword(const std::string &password);
 };
 
 //struct pollfd è una struttura dati del sistema operativo che contiene il file descriptor da osservare,

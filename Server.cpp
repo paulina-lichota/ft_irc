@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:26:11 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/22 16:19:45 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/22 17:02:40 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ Server::~Server() {}
 // poll() + recv() (in questo ordine)
 // recv() legge i dati arrivati su un socket e li mette in un buffer
 
+// Loop di ascolto dei client
 void	Server::run(){
 
 	//loop con poll() che aspetta eventi sugli fd aperti (multiplexing)
@@ -54,8 +55,8 @@ void	Server::run(){
 
 /* -------------------------------------------------------------------------- */
 
-//porte 0 - 1023 well-known ports / porte privilegiate, richiedono privilegi di root
-//le porte sono numeri a 16 bit, quindi il max è 2¹⁶ - 1
+// porte 0 - 1023 well-known ports / porte privilegiate, richiedono privilegi di root
+// le porte sono numeri a 16 bit, quindi il max è 2¹⁶ - 1
 bool	Server::isValidPort(const std::string &port) {
 	if (port.empty() || port.size() > 5) // check per rischio overflow con atoi, max 65535 = 5 cifre
 		return (false);
@@ -67,7 +68,9 @@ bool	Server::isValidPort(const std::string &port) {
 	return (port_num > 1024 && port_num <= 65535);
 }
 
-//criteri per password?? no spazi?
+// criteri per password?? 
+// no spazi? rischio di troncamento da parte del server quando client manda messaggi
+// (vanno gestiti con buffer)
 bool	Server::isValidPassword(const std::string &password) {
 	if (password.empty())
 		return (false);

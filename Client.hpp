@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/22 16:23:34 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/22 16:41:55 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/22 16:57:37 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,13 +17,13 @@
 
 class Client
 {
-private:
-	//fd
-	//nickname
-	//buffer
-public:
-	Client(/* args */);
-	~Client();
+	private:
+		//fd
+		//nickname
+		//buffer
+	public:
+		Client(/* args */);
+		~Client();
 };
 
 #endif
