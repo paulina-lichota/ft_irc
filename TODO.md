@@ -7,10 +7,10 @@
 - [X] setsockopt SO_REUSEADDR
 - [X] bind()
 - [X] listen()
-- [ ] poll() loop base
-- [ ] accept() — nuova connessione
-- [ ] recv() — lettura dati
-- [ ] Buffer per messaggi parziali
+- [X] poll() loop base
+- [X] accept() — nuova connessione
+- [X] recv() — lettura dati
+- [X] Buffer per messaggi parziali
 - [ ] Estrazione messaggi completi (\r\n)
 - [ ] Disconnessione client (POLLHUP / recv() == 0)
 - [ ] Classe Client — attributi base
