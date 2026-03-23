@@ -81,7 +81,7 @@ Our program can read the data with `read(fd, buffer, 10)`.
 
 ## Handshake
 
-TCP is a **connection-oriented protocol**, which means that before any data can be exchanged, both sides must agree that they are ready to communicate. This agreement is called the **three-way handshake** — exactly three messages are exchanged.
+TCP is a **connection-oriented protocol**, which means that before any data can be exchanged, both sides must agree that they are ready to communicate. This agreement is called the **three-way handshake**, exactly three messages are exchanged.
 
 > Imagine you want to call a friend.
 > Before you can talk, you both need to confirm the line is working.
@@ -89,40 +89,24 @@ TCP is a **connection-oriented protocol**, which means that before any data can 
 > Only now you start the real conversation.
 > That's the handshake.
 
-**Why does it exist?**
-TCP guarantees that data arrives complete and in order. To do this, both sides need to know that the other exists, is reachable, and is ready. They also need to agree on the **sequence numbers** — the counters that will be used to track every byte sent.
+### Why does it exist?
+TCP guarantees that data arrives complete and in order. To do this, both sides need to know that the other exists, is reachable, and is ready. They also need to agree on the **sequence numbers** the counters that will be used to track every byte sent.
 
----
-
-### The three steps
+### The three steps (SYN, SYN-ACK, ACK)
 
 **1. SYN** — the client sends a packet with the SYN flag to the server. Inside there is a randomly chosen **sequence number** `X`. This number will be used to track the order of the bytes sent.
 
-```
-client → SYN (seq=X) → server
-```
-
-> *"Hello? I want to connect. I'll start counting from X."*
+> *"Hello? I want to connect. I'll start counting from 1000."*
 
 **2. SYN-ACK** — the server receives the SYN and replies with a packet carrying two flags: SYN and ACK.
 - The **ACK** says "I received your SYN" and contains `X+1` — "I expect your next byte to start from X+1"
 - The **SYN** contains the server's own sequence number `Y`
 
-```
-client ← SYN-ACK (seq=Y, ack=X+1) ← server
-```
-
-> *"Hello! I heard you, I'm ready. I'll start counting from Y, and I expect you to continue from X+1."*
+> *"Hello! I heard you, I'm ready. I'll start counting from 5000, and I expect you to continue from 1000+1."*
 
 **3. ACK** — the client sends a final ACK containing `Y+1` — "I received your SYN, I expect your next byte to start from Y+1". The connection is now established.
 
-```
-client → ACK (ack=Y+1) → server
-```
-
 > *"Perfect, I heard you too. Let's talk."*
-
----
 
 ### What are sequence numbers?
 
@@ -130,37 +114,35 @@ Every byte transmitted in TCP has a sequence number. They serve two purposes:
 - **Reorder** packets that arrive out of order
 - **Detect** lost packets that need to be retransmitted
 
+The first packet sent by the client contains a randomly chosen **ISN** (Initial Sequence Number).
+
+The initial sequence numbers are **random** for security reasons — it prevents attackers from injecting fake packets by guessing the numbers.
+
 > Remember the book sent by mail analogy?
 > The sequence number is the page number written on each envelope.
 > If envelope 42 arrives before envelope 41, you wait.
 > If envelope 41 never arrives, you ask for it again.
 
-The initial sequence numbers are **random** for security reasons — it prevents attackers from injecting fake packets by guessing the numbers.
-
----
+#### 👾 ISN spoofing
+The number is casual to prevent attackers from guessing it.
+The **spoofing** attack is verified when the attacker sends a packet with the same ISN as the real packet.
 
 ### Where does the kernel fit in?
 
-The entire handshake is handled **autonomously by the kernel** — your program does nothing during this phase. When the handshake completes, the kernel puts the established connection in an internal queue called the **accept queue** and waits for your program to call `accept()`.
+The entire handshake is handled **autonomously by the kernel**, your program does nothing during this phase. When the handshake completes, the kernel puts the established connection in an internal queue called the **accept queue** and waits for your program to call `accept()`.
 
 > Think of it like a receptionist at the front desk.
 > The receptionist (kernel) greets every visitor, checks their identity, and has them sit in the waiting room (accept queue).
 > Only when you call `accept()` does the receptionist bring the visitor to your office.
 > You never deal with the greeting yourself — it already happened.
 
-```
-client connects → kernel does handshake → connection enters accept queue → poll() signals POLLIN on serverFd → accept() takes the connection
-```
-
 This is why `listen()` takes a **backlog** parameter — it sets the maximum size of that waiting room. If the waiting room is full when a new client tries to connect, the kernel silently drops the SYN and the client will time out and retry.
-
----
 
 ### After the handshake
 
 Once `accept()` picks up the connection, the TCP channel is open. In the context of your IRC server, the **IRC handshake** begins — the client must now send:
 
-```
+```bash
 PASS mypassword
 NICK mynickname
 USER myusername 0 * :myrealname
