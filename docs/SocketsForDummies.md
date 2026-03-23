@@ -161,3 +161,20 @@ USER myusername 0 * :myrealname
 > the client introduces itself and proves it knows the password.
 
 Only after these three commands does the server send the welcome messages `001 002 003 004` and the client is fully registered.
+
+### Your program
+At this point, the TCP connection is open and the IRC handshake is complete.
+
+Your program can now do the following:
+
+1. Call **socket()** for obtaining a file descriptor. You will use it only for listening for incoming connections.
+2. Call **bind()** to associate the file descriptor with a local address
+3. Call **listen()** to put the socket in listening mode.
+    You can also set a **backlog** parameter to limit the number of pending connections
+4. Accept an incoming connection with **accept()**. The server is now ready to receive data
+5. Use **read()** and **write()** to send and receive data from the client.
+    IRC protocol is managed in this step. The server has to manage commands like **PASS**, **NICK**, **USER**, etc.
+6. Manage multiple clients with **poll()**, **select()** or **epoll()**
+7. Close the connection with **close()**
+
+> The server has multiple fds. One for each client and one for the listening socket.
