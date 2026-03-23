@@ -1,5 +1,4 @@
 # Sockets For Dummies
-
 ## What is a socket?
 A socket is a **file descriptor** that can be used to
 send and receive data over the network.
@@ -16,7 +15,6 @@ two **buffers** (one for sending and one for receiving) and a file descriptor.
 They are array of bytes in the RAM.
 
 The **fd** is a number that identifies the pair of buffers you are using.
-
 
 ## Parallelism with pipes
 
@@ -123,13 +121,23 @@ The initial sequence numbers are **random** for security reasons — it prevents
 > If envelope 42 arrives before envelope 41, you wait.
 > If envelope 41 never arrives, you ask for it again.
 
-#### 👾 ISN spoofing
-The number is casual to prevent attackers from guessing it.
-The **spoofing** attack is verified when the attacker sends a packet with the same ISN as the real packet.
+#### 👾 ISN spoofing for ꧁𓊈𒆜𝓟𝓻𝓸𒆜𓊉꧂
+The number is random to prevent attackers from guessing it.
+In a **spoofing** attack, the attacker forges sends a packet pretending to be
+one of the two parties.
+If the sequence number were predictable, the forged packet would
+be accepted as legitimate.
+A random ISN forces the attacker to guess from billions of possible values.
+
+> Back to the phone call analogy:
+> You and your friend agree on a secret code word before talking.
+> If someone else picks up the phone and pretends to be your friend,
+> they won't know the code word. You hang up.
+> The random ISN is that code word.
 
 ### Where does the kernel fit in?
 
-The entire handshake is handled **autonomously by the kernel**, your program does nothing during this phase. When the handshake completes, the kernel puts the established connection in an internal queue called the **accept queue** and waits for your program to call `accept()`.
+The entire handshake is handled **autonomously by the kernel**, **your program does nothing** during this phase. When the handshake completes, the kernel puts the established connection in an internal queue called the **accept queue** and waits for your program to call `accept()`.
 
 > Think of it like a receptionist at the front desk.
 > The receptionist (kernel) greets every visitor, checks their identity, and has them sit in the waiting room (accept queue).
