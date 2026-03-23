@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:17:58 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/22 16:33:15 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/23 13:00:04 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,5 +18,10 @@
 # include <cstdlib>
 # include <map>
 # include <vector>
+# include <sys/socket.h>
+# include <unistd.h>
+# include <cstring>
+# include <netinet/in.h>
+# include <fcntl.h>
 
 #endif

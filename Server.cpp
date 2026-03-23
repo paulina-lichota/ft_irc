@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:26:11 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/22 21:44:01 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/23 13:03:01 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,13 +15,44 @@
 Server::Server(const int port, const std::string &password) : _port(port), _password(password) {
 	//creo socket (fd) (unico scopo: accettare nuove connessioni)
 	//socket() alloca un nuovo socket nel kernel e ritorna il file descriptor
+	//AF_INET -> socket IPv4
+	//SOCK_STREAM -> socket TCP (stream-oriented)
+	// protocollo 0 -> TCP (default per SOCK_STREAM)
+	_serverFd = socket(AF_INET, SOCK_STREAM, 0);
+	if (_serverFd < 0)
+		throw std::runtime_error("Error creating socket");
+	fcntl(_serverFd, F_SETFL, O_NONBLOCK); // setto socket non-bloccante per accettare connessioni senza bloccare il server
 	//setsockopt() con SO_REUSEADDR permette il riuso immediato della porta (latirmenti rimane bloccata per 60 sec)
+	int opt = 1;
+	if (setsockopt(_serverFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(int)) < 0) {
+		close(_serverFd);
+		throw std::runtime_error("Error setting socket options");
+	}
+	//salvo l'indirizzo del server in una struct sockaddr_in (IPv4)
+	struct sockaddr_in server_addr;
+	std::memset(&server_addr, 0, sizeof(server_addr));
+	server_addr.sin_family = AF_INET; // IPv4
+	server_addr.sin_addr.s_addr = INADDR_ANY; // accetta connessioni su tutte le interfacce
+	server_addr.sin_port = htons(_port); // porta in network byte order
 	//associo socket - indirizzo locale (ip + port) con bind()
+	if (bind(_serverFd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
+		close(_serverFd);
+		throw std::runtime_error("Error binding socket");
+	}
 	//metto il socket in stato listen ()
+	if (listen(_serverFd, SOMAXCONN) < 0) {
+		close(_serverFd);
+		throw std::runtime_error("Error listening on socket");
+	}
+	_fds.push_back((struct pollfd){_serverFd, POLLIN, 0}); // aggiungo socket server a _fds per monitorare nuove connessioni
+	std::cout << "Server started on port " << _port << std::endl; // server pronto ad ascoltare
 	//server pronto ad ascoltare
 }
 
-Server::~Server() {}
+Server::~Server() {
+	for (size_t i = 0; i < _fds.size(); i++)
+		close(_fds[i].fd);
+}
 
 /* -------------------------------------------------------------------------- */
 
@@ -63,7 +94,7 @@ void	Server::run(){
 		for (size_t i = 0; i < _fds.size(); i++)
 		{
 			// controllo revents per ogni fd
-		}	
+		}
 	}
 	// se fd nuovo client + POLLIN (ci sono dati da leggere)
 		// handshake (PASS, NICK, USER)
