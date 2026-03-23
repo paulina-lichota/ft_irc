@@ -21,7 +21,23 @@ _serverFd = socket(AF_INET, SOCK_STREAM, 0);
 
 ---
 
-## 2. setsockopt()
+## 2. fcntl()
+
+```cpp
+fcntl(_serverFd, F_SETFL, O_NONBLOCK);
+```
+
+Rende il socket non-bloccante. Per default un socket è **bloccante** — se chiami `accept()` e non c'è nessun client in attesa, il processo si ferma e aspetta finché non arriva qualcuno, bloccando tutto il server.
+
+Con `O_NONBLOCK` il comportamento cambia — se chiami `accept()` o `recv()` e non c'è niente disponibile, la funzione ritorna immediatamente con `errno = EAGAIN` invece di bloccarsi.
+
+Questo è fondamentale perché il server ha un solo processo che deve gestire più client contemporaneamente. Se una syscall si bloccasse, tutti gli altri client rimarrebbero in attesa.
+
+In pratica, combinato con `poll()`, non ti capiterà quasi mai di chiamare `accept()` o `recv()` senza che ci sia qualcosa da leggere — perché `poll()` ti dice prima che c'è un evento. `O_NONBLOCK` è una rete di sicurezza per i casi edge in cui qualcosa va storto tra il momento in cui `poll()` segnala l'evento e il momento in cui chiami la syscall.
+
+---
+
+## 3. setsockopt()
 
 ```cpp
 int opt = 1;
@@ -40,7 +56,7 @@ Configura un'opzione sul socket appena creato. In questo caso abilitiamo `SO_REU
 
 ---
 
-## 3. bind()
+## 4. bind()
 
 ```cpp
 struct sockaddr_in server_addr;
@@ -73,7 +89,7 @@ Prima di chiamare `bind()` dobbiamo costruire una `struct sockaddr_in` con le in
 
 ---
 
-## 4. listen()
+## 5. listen()
 
 ```cpp
 listen(_serverFd, SOMAXCONN);
@@ -96,3 +112,35 @@ Se la coda è piena e arriva un nuovo client, il kernel scarta il SYN direttamen
 SOMAXCONN usa il massimo consentito dal sistema operativo — su Linux tipicamente 128.
 
 ---
+
+## 6. Inizializzazione di `_pollFds`
+
+```cpp
+struct pollfd server_pollfd;
+server_pollfd.fd = _serverFd;
+server_pollfd.events = POLLIN;
+server_pollfd.revents = 0;
+_pollFds.push_back(server_pollfd);
+```
+
+`_pollFds` è il vettore di `struct pollfd` che `poll()` userà nel loop principale per monitorare tutti i file descriptor aperti — il server socket e tutti i client connessi.
+
+`struct pollfd` ha tre campi:
+
+| Campo | Chi lo scrive | Significato |
+|---|---|---|
+| `fd` | tu | quale fd monitorare |
+| `events` | tu | quali eventi ti interessano |
+| `revents` | il kernel | quali eventi si sono verificati |
+
+La distinzione tra `events` e `revents` è importante — `events` lo imposti tu prima di chiamare `poll()`, `revents` lo riempie il kernel quando `poll()` ritorna. Sono separati perché potresti voler monitorare eventi diversi su fd diversi.
+
+`revents` è una **maschera di bit** — può avere più flag attivi contemporaneamente. Per esempio un fd potrebbe avere sia `POLLIN` che `POLLHUP` settati nello stesso momento. Per questo motivo va sempre controllato con `&` e non con `==`:
+
+Il server socket viene aggiunto come primo elemento del vettore con `POLLIN` — così `poll()` ci segnala quando un nuovo client vuole connettersi. Da quel momento in poi, ogni volta che `accept()` crea un nuovo client socket, aggiungeremo un nuovo elemento a `_pollFds` con lo stesso pattern. Quando un client si disconnette, rimuoveremo il suo elemento dal vettore.
+
+---
+
+# Server — Loop principale
+
+Il loop principale del server è un ciclo infinito che chiama `poll()` per aspettare eventi su tutti i file descriptor aperti. Quando `poll()` ritorna, controlla quali fd hanno eventi attivi e agisce di conseguenza.

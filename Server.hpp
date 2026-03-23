@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/22 21:30:42 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/23 19:11:02 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,21 +15,23 @@
 
 #include "includes.hpp"
 #include "Client.hpp"
-#include <poll.h> // poll(), struct pollfd
 
-class Server
-{
+class Server {
 private:
-	int _port;
-	std::string _password; // PASS mypassword -> mypassword == _passoword, altrimenti connessione rifiutata
-	int _serverFd;					 // socket del server (ascolta nuovi client)
-	std::vector<struct pollfd> _fds; // array di fd dei clients da monitorare
-	std::map<int, Client> _clients;	 // associazione fd -> oggetto client
+	int							_port;
+	std::string					_password; // PASS mypassword -> mypassword == _passoword, altrimenti connessione rifiutata
+	int							_serverFd; // socket del server (ascolta nuovi client)
+	std::vector<struct pollfd>	_pollFds; // array di fd dei clients da monitorare
+	std::map<int, Client>		_clients;	 // associazione fd -> oggetto client
+	static const int			POLL_TIMEOUT = -1; // -1 per aspettare eventi all'infinito
 public:
 	Server(const int port, const std::string &password);
 	~Server();
 
 	void run();
+	void addPollFd(int fd);
+	void handleNewConnection();
+	void handleClientDisconnection(size_t index);
 	static bool isValidPort(const std::string &port);
 	static bool isValidPassword(const std::string &password);
 };

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 15:28:50 by plichota          #+#    #+#             */
-/*   Updated: 2026/03/22 17:05:59 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/23 17:21:00 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,8 @@ int main(int argc, char **argv) {
 			throw std::invalid_argument("Error: invalid port.");
 		if (!Server::isValidPassword(argv[2]))
 			throw std::invalid_argument("Error: invalid password.");
-		//Server server(std::atoi(argv[1]), argv[2]);
-		//server.run();
+		Server server(std::atoi(argv[1]), argv[2]);
+		server.run();
 	}
 	catch (std::exception &e) {
 		std::cerr << e.what() << std::endl;

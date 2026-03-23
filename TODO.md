@@ -1,12 +1,12 @@
 # TODO — ft_irc
 
 ## Fase 1 — Server core
-- [ ] Classe Server — attributi e costruttore
-- [ ] Validazione porta e password
-- [ ] Creazione server socket
-- [ ] setsockopt SO_REUSEADDR
-- [ ] bind()
-- [ ] listen()
+- [X] Classe Server — attributi e costruttore
+- [X] Validazione porta e password
+- [X] Creazione server socket
+- [X] setsockopt SO_REUSEADDR
+- [X] bind()
+- [X] listen()
 - [ ] poll() loop base
 - [ ] accept() — nuova connessione
 - [ ] recv() — lettura dati

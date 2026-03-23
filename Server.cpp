@@ -6,63 +6,45 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:26:11 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/23 13:03:01 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/23 19:10:07 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
 Server::Server(const int port, const std::string &password) : _port(port), _password(password) {
-	//creo socket (fd) (unico scopo: accettare nuove connessioni)
-	//socket() alloca un nuovo socket nel kernel e ritorna il file descriptor
-	//AF_INET -> socket IPv4
-	//SOCK_STREAM -> socket TCP (stream-oriented)
-	// protocollo 0 -> TCP (default per SOCK_STREAM)
-	_serverFd = socket(AF_INET, SOCK_STREAM, 0);
+	_serverFd = socket(AF_INET, SOCK_STREAM, 0); //AF_INET -> socket IPv4, SOCK_STREAM -> socket TCP (stream-oriented), protocollo 0 -> TCP (default per SOCK_STREAM)
 	if (_serverFd < 0)
 		throw std::runtime_error("Error creating socket");
 	fcntl(_serverFd, F_SETFL, O_NONBLOCK); // setto socket non-bloccante per accettare connessioni senza bloccare il server
-	//setsockopt() con SO_REUSEADDR permette il riuso immediato della porta (latirmenti rimane bloccata per 60 sec)
-	int opt = 1;
-	if (setsockopt(_serverFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(int)) < 0) {
+	int opt = 1; //tipo booleano che serve per setsockopt, 1 per attivare SO_REUSEADDR
+	if (setsockopt(_serverFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(int)) < 0) { //SO_REUSEADDR permette il riuso immediato della porta
 		close(_serverFd);
 		throw std::runtime_error("Error setting socket options");
 	}
-	//salvo l'indirizzo del server in una struct sockaddr_in (IPv4)
-	struct sockaddr_in server_addr;
+	struct sockaddr_in server_addr; //salvo l'indirizzo del server in una struct sockaddr_in (IPv4)
 	std::memset(&server_addr, 0, sizeof(server_addr));
 	server_addr.sin_family = AF_INET; // IPv4
-	server_addr.sin_addr.s_addr = INADDR_ANY; // accetta connessioni su tutte le interfacce
+	server_addr.sin_addr.s_addr = INADDR_ANY; // accetta connessioni su tutte le interfacce, es. ethernet, wifi, localhost
 	server_addr.sin_port = htons(_port); // porta in network byte order
-	//associo socket - indirizzo locale (ip + port) con bind()
-	if (bind(_serverFd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
+	if (bind(_serverFd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) { //associo socket - indirizzo locale (ip + port) con bind()
 		close(_serverFd);
 		throw std::runtime_error("Error binding socket");
 	}
-	//metto il socket in stato listen ()
-	if (listen(_serverFd, SOMAXCONN) < 0) {
+	if (listen(_serverFd, SOMAXCONN) < 0) { //metto il socket in stato listen (), SOMAXCONN è il backlog massimo supportato dal sistema operativo (numero di connessioni in attesa)
 		close(_serverFd);
 		throw std::runtime_error("Error listening on socket");
 	}
-	_fds.push_back((struct pollfd){_serverFd, POLLIN, 0}); // aggiungo socket server a _fds per monitorare nuove connessioni
+	addPollFd(_serverFd); // aggiungo socket del server a _pollFds per monitorarlo con poll() per nuove connessioni
 	std::cout << "Server started on port " << _port << std::endl; // server pronto ad ascoltare
-	//server pronto ad ascoltare
 }
 
 Server::~Server() {
-	for (size_t i = 0; i < _fds.size(); i++)
-		close(_fds[i].fd);
+	for (size_t i = 0; i < _pollFds.size(); i++)
+		close(_pollFds[i].fd);
 }
 
 /* -------------------------------------------------------------------------- */
-
-//The server must be capable of handling multiple clients simultaneously without hanging.
-// -> poll() ascolta eventi sui file descriptor
-
-// Forking is prohibited. All I/O operations must be non-blocking.
-// poll() + recv() (in questo ordine)
-// recv() legge i dati arrivati su un socket e li mette in un buffer
-
 
 /*
 	poll() e' una funziona bloccante, si ferma finche' non succede un evento
@@ -73,7 +55,7 @@ Server::~Server() {
 	timeout = 5000 → aspetta massimo 5 secondi, poi ritorna comunque (anche se non accade niente)
 */
 /*
-	_fds e' un vector di <struct pollfd>.
+	_pollFds e' un vector di <struct pollfd>.
 	Nella struct prima si definisce l'fd da monitorare e l'event da ascoltare.
 	poll() mette gli eventi passati in _fd[].revents (anche alcuni non richiesti)
 	I tipi di evento sono:
@@ -84,30 +66,71 @@ Server::~Server() {
 	POLLOUT → scrivere senza bloccarti -> serve quando buffer scrittura pieno
 */
 void	Server::run(){
-	const int timeout = -1; // aspetta eventi all'infinito
-	// loop con poll() che aspetta eventi sugli fd aperti (multiplexing)
-	while (true)
-	{
-		poll(&_fds[0], _fds.size(), timeout);
-		// qui poll e' ritornato perche' e' successo qualcosa
-
-		for (size_t i = 0; i < _fds.size(); i++)
-		{
-			// controllo revents per ogni fd
+	while (true) {
+		int ret = poll(&_pollFds[0], _pollFds.size(), POLL_TIMEOUT);
+		if (ret < 0) {
+			if (errno == EINTR) // poll() è stato interrotto da un segnale, possiamo ignorare e continuare
+				continue;
+			std::cerr << "Error in poll()" << std::endl;
+			break;
+		}
+		if (_pollFds[0].revents & POLLIN) //revents è un bitmask, controllo se c'è POLLIN sul server socket (nuova connessione)
+			handleNewConnection();
+		for (size_t i = 1; i < _pollFds.size(); i++) {
+			if (_pollFds[i].revents & POLLIN) {
+				char buffer[IRC_MSG_MAX_LEN]; // buffer temporaneo per leggere dati da client socket
+				int n = recv(_pollFds[i].fd, buffer, sizeof(buffer) - 1, 0); //leggo dati da client socket, li metto in buffer
+				if (n <= 0) {
+					handleClientDisconnection(i); // se n == 0 -> client ha chiuso connessione, se n < 0 -> errore (es. client disconnesso improvvisamente)
+					i--;
+					continue;
+				} else {
+					std::cout << "Received from client fd " << _pollFds[i].fd << ": " << std::string(buffer, n) << std::endl;
+					_clients[_pollFds[i].fd].appendToBuffer(std::string(buffer, n)); // aggiungo dati al buffer del client
+					// estraggo messaggio completo (buffer)
+					// gestisco messaggio (comandi, canali, ecc)
+				}
+			}
+			else if (_pollFds[i].revents & (POLLHUP | POLLERR)) { //POLLHUP -> client si è disconnesso, POLLERR -> errore sul fd
+				handleClientDisconnection(i);
+				i--;
+				//tolgo client dai canali
+			}
 		}
 	}
-	// se fd nuovo client + POLLIN (ci sono dati da leggere)
-		// handshake (PASS, NICK, USER)
-		// -> accept(), crea nuovo socket decato a questo client
-		// nuova istanza di Client che salvo in una struttura in Server?
-		//se fd è gia client + POLLIN
-			//-> recv()
-			//-> estraggo mesaggio completo
-			//-> gestisco messaggio
-		// gestione errore / disconnessione
-			// disconnessione + rimuover client dalla struttra in server
-			// chiudere socket
-			// togliere client dai canali
+}
+
+// accetto nuova connessione, ottengo nuovo client socket
+// setto client socket non-bloccante
+// aggiungo client socket a _pollFds per monitorarlo
+// creo oggetto Client associato al client socket, lo salvo in _clients con fd come chiave
+void Server::handleNewConnection() {
+	struct sockaddr_in clientAddr;
+	socklen_t clientAddrLen = sizeof(clientAddr);
+	int clientFd = accept(_serverFd, (struct sockaddr *)&clientAddr, &clientAddrLen); // accetto nuova connessione, ottengo nuovo client socket
+	if (clientFd < 0) {
+		std::cerr << "Error accepting new connection" << std::endl;
+		return ;
+	}
+	fcntl(clientFd, F_SETFL, O_NONBLOCK); // setto client socket non-bloccante
+	addPollFd(clientFd); // aggiungo client socket a _pollFds per monitorarlo
+	_clients[clientFd] = Client(clientFd); // creo oggetto Client associato al client socket, lo salvo in _clients con fd come chiave
+	std::cout << "New client connected: fd " << clientFd << std::endl;
+}
+
+void Server::addPollFd(int fd) {
+	struct pollfd newPollFd;
+	newPollFd.fd = fd;
+	newPollFd.events = POLLIN;
+	newPollFd.revents = 0;
+	_pollFds.push_back(newPollFd);
+}
+
+void Server::handleClientDisconnection(size_t index) {
+	std::cout << "Client fd " << _pollFds[index].fd << " disconnected" << std::endl;
+	close(_pollFds[index].fd);
+	_clients.erase(_pollFds[index].fd);
+	_pollFds.erase(_pollFds.begin() + index);
 }
 
 /* -------------------------------------------------------------------------- */

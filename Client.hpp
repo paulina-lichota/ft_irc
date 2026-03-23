@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/22 16:23:34 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/22 16:57:37 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/23 19:11:59 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,15 +15,20 @@
 
 # include "includes.hpp"
 
-class Client
-{
-	private:
-		//fd
-		//nickname
-		//buffer
-	public:
-		Client(/* args */);
-		~Client();
+class Client {
+private:
+	int			_fd;
+	//nickname
+	std::string	_buffer;
+
+public:
+	Client();
+	Client(int fd);
+	~Client();
+
+	std::string &getBuffer();
+	int getFd() const;
+	void appendToBuffer(const std::string &data);
 };
 
 #endif
