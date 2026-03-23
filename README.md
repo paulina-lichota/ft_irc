@@ -10,7 +10,7 @@ IRC (Internet Relay Chat) is a protocol for chatting over the Internet, created 
 Clients connect to a server via TCP, send commands (such as JOIN #channel), and the server relays messages.
 All communication is plain text terminated by \r\n.
 
-> ✨ Check [Sockets For Dummies](SocketsForDummies.md) for a better understanding of how data travels across the network ✨
+> ✨ Check [Sockets For Dummies](docs/SocketsForDummies.md) for a better understanding of how data travels across the network ✨
 
 ## Connection from client
 ```bash
