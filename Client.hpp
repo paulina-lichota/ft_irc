@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/22 16:23:34 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/24 14:26:58 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/24 15:05:10 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,8 +23,8 @@ private:
 	std::string	_realname; // ''
 	std::string	_hostname; // ''
 	std::string	_buffer; // buffer per dati ricevuti dal client, usato per gestire messaggi incompleti
-	bool		_passwordAccepted; // true se il client ha inviato PASS <password> corretta, altrimenti false
-	bool		_registered; // true se il client ha completato la registrazione (PASS + NICK + USER), altrimenti false
+	// bool		_passwordAccepted; // true se il client ha inviato PASS <password> corretta, altrimenti false
+	// bool		_registered; // true se il client ha completato la registrazione (PASS + NICK + USER), altrimenti false
 public:
 	Client();
 	Client(int fd, const std::string &hostname);

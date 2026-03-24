@@ -18,9 +18,9 @@
 - [X] accept() — nuova connessione
 - [X] recv() — lettura dati
 - [X] Buffer per messaggi parziali
-- [ ] Estrazione messaggi completi (\r\n)
-- [ ] Disconnessione client (POLLHUP / recv() == 0)
-- [ ] Classe Client — attributi base
+- [X] Estrazione messaggi completi (\r\n)
+- [X] Disconnessione client (POLLHUP / recv() == 0)
+- [X] Classe Client — attributi base
 - [ ] Parser messaggi IRC (prefix, command, params, trailing)
 
 ## Fase 2 — Handshake (tutti insieme)

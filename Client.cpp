@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/22 16:24:21 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/24 14:27:30 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/24 15:05:49 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,18 +17,20 @@ Client::Client() : _fd(-1),
 	_username(""),
 	_realname(""),
 	_hostname(""),
-	_buffer(""),
-	_passwordAccepted(false),
-	_registered(false) {}
+	_buffer("")
+	// _passwordAccepted(false),
+	//_registered(false)
+	{}
 
 Client::Client(int fd, const std::string &hostname) : _fd(fd),
 	_nickname(""),
 	_username(""),
 	_realname(""),
 	_hostname(hostname),
-	_buffer(""),
-	_passwordAccepted(false),
-	_registered(false) {}
+	_buffer("")
+	// _passwordAccepted(false),
+	//_registered(false)
+	{}
 
 Client::~Client() {}
 
