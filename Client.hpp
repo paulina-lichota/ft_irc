@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: francema <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/22 16:23:34 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/24 14:26:58 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/24 15:23:40 by francema         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,8 @@ private:
 public:
 	Client();
 	Client(int fd, const std::string &hostname);
+	Client(const Client& other);
+	Client& operator=(const Client& other);
 	~Client();
 
 	//Getters
