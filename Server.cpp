@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:26:11 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/24 14:30:00 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/24 14:35:57 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,10 +108,10 @@ bool Server::handleClientMessage(size_t index) {
 	}
 	std::cout << "Received from client fd " << _pollFds[index].fd << ": " << std::string(buffer, n) << std::endl;
 	_clients[_pollFds[index].fd].appendToBuffer(std::string(buffer, n)); // aggiungo dati al buffer del client
-	std::string message = _clients[_pollFds[index].fd].extractMessageFromBuffer();
-	if (!message.empty()) {
-		std::cout << "Complete message from client fd " << _pollFds[index].fd << ": " << message << std::endl;
-		// gestisco messaggio (comandi, canali, ecc)
+	std::string message;
+	while (!(message = _clients[_pollFds[index].fd].extractMessageFromBuffer()).empty()) {
+		std::cout << "Complete message: " << message << std::endl;
+		// qui va la logica per processare il messaggio completo, es. parsing comando, esecuzione comando, invio risposta
 	}
 	return (true);
 }
