@@ -5,7 +5,7 @@
 ## Fase 0 — Parsing argomenti
 - [X] Validazione numero argomenti
 - [X] Validazione porta (intervallo 1-65535)
-- [ ] Validazione password (controlla criteri di sicurezza)
+- [x] Validazione password (controlla criteri di sicurezza)
 
 ## Fase 1 — Server core
 - [X] Classe Server — attributi e costruttore

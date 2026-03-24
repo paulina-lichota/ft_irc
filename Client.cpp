@@ -6,7 +6,7 @@
 /*   By: francema <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/22 16:24:21 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/24 15:23:49 by francema         ###   ########.fr       */
+/*   Updated: 2026/03/24 16:16:26 by francema         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,9 +26,10 @@ Client::Client(int fd, const std::string &hostname) : _fd(fd),
 	_username(""),
 	_realname(""),
 	_hostname(hostname),
-	_buffer(""),
-	_passwordAccepted(false),
-	_registered(false) {}
+	_buffer("")
+	// _passwordAccepted(false),
+	// _registered(false)
+{}
 
 Client::Client(const Client& other): _fd(other._fd),
 	_nickname(other._nickname),
