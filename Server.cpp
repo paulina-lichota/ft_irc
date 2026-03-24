@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/24 17:19:41 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/24 17:44:26 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,9 +120,10 @@ bool Server::handleClientMessage(size_t index) {
 		for (size_t i = 0; i < msg.getParams().size(); i++) {
 			std::cout << "[" << msg.getParams()[i] << "]";
 		}
-		// std::cout << ", Trailing: " << msg.getTrailing();
+		std::cout << ", Trailing: " << msg.getTrailing();
 		std::cout << std::endl;
-		// qui va la logica per processare il messaggio completo, es. parsing comando, esecuzione comando, invio risposta
+		//esecuzione comando
+		//invio risposta
 	}
 	return (true);
 }

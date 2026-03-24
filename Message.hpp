@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Message.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/24 17:18:44 by plichota          #+#    #+#             */
-/*   Updated: 2026/03/24 17:19:36 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/24 17:44:09 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@ public:
 	const std::vector<std::string>&	getParams()		const;
 	bool							isValid()		const;
 	const std::string&				getError()		const;
+	const std::string&				getTrailing()	const;
 };
 
 #endif

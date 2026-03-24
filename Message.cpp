@@ -3,21 +3,22 @@
 /*                                                        :::      ::::::::   */
 /*   Message.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/24 17:18:37 by plichota          #+#    #+#             */
-/*   Updated: 2026/03/24 17:18:38 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/24 17:44:28 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Message.hpp"
 
-Message::Message() : _prefix(""), _command(""), _params(), _valid(true), _error("") {}
+Message::Message() : _prefix(""), _command(""), _params(), _trailing(""), _valid(true), _error("") {}
 
 Message::Message(const Message &other)
 	:_prefix(other._prefix),
 	_command(other._command),
 	_params(other._params),
+	_trailing(other._trailing),
 	_valid(other._valid),
 	_error(other._error) {}
 
@@ -26,6 +27,7 @@ Message &Message::operator=(const Message &other) {
 		_prefix  = other._prefix;
 		_command = other._command;
 		_params  = other._params;
+		_trailing = other._trailing;
 		_valid = other._valid;
 		_error = other._error;
 	}
@@ -34,7 +36,7 @@ Message &Message::operator=(const Message &other) {
 
 Message::~Message() {}
 
-Message::Message(const std::string &raw): _prefix(""), _command(""), _params(), _valid(true), _error("") {
+Message::Message(const std::string &raw): _prefix(""), _command(""), _params(), _trailing(""), _valid(true), _error("") {
 	std::string line = raw;
 
 	//trim leading spaces
@@ -104,5 +106,9 @@ const std::string&	Message::getPrefix() const { return _prefix; }
 const std::string&	Message::getCommand() const { return _command; }
 
 const std::vector<std::string>&	Message::getParams() const { return _params; }
+
 const std::string&	Message::getError() const { return _error; }
+
+const std::string&	Message::getTrailing() const { return _trailing; }
+
 bool	Message::isValid() const { return _valid; }

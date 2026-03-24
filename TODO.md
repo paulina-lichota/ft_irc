@@ -5,7 +5,7 @@
 ## Fase 0 — Parsing argomenti
 - [X] Validazione numero argomenti
 - [X] Validazione porta (intervallo 1-65535)
-- [x] Validazione password (controlla criteri di sicurezza)
+- [X] Validazione password (controlla criteri di sicurezza)
 
 ## Fase 1 — Server core
 - [X] Classe Server — attributi e costruttore
@@ -21,7 +21,7 @@
 - [X] Estrazione messaggi completi (\r\n)
 - [X] Disconnessione client (POLLHUP / recv() == 0)
 - [X] Classe Client — attributi base
-- [ ] Parser messaggi IRC (prefix, command, params, trailing)
+- [X] Parser messaggi IRC (prefix, command, params, trailing)
 
 ## Fase 2 — Handshake (tutti insieme)
 - [ ] PASS
