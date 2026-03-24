@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/24 17:16:12 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/24 17:21:36 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,9 @@
 #include "signal.hpp"
 #include "Server.hpp"
 
-// ./ircserv <port> <password>
+// ./ircserv 6667 password
+// nc -C 127.0.0.1 6667
+
 int main(int argc, char **argv)
 {
 	init_signals();

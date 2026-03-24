@@ -42,6 +42,7 @@
 ## Fase 4 — Operatori
 - [ ] KICK
 - [ ] INVITE
+- [ ] Test con nc — messaggi parziali
 - [ ] TOPIC (modifica)
 - [ ] MODE +i
 - [ ] MODE +t
