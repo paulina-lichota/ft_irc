@@ -106,10 +106,13 @@ client ← SYN-ACK ← kernel
 client → ACK      → kernel
 ```
 
-Tutto questo avviene prima che il tuo programma faccia qualsiasi cosa. Quando l'handshake è completato, la connessione è già stabilita a tutti gli effetti — il kernel la mette in una coda interna chiamata accept queue e aspetta che il programma chiami accept() per prenderla.
-Il backlog è la dimensione massima di quella coda. Esiste perché potrebbero arrivare più connessioni quasi simultaneamente — il kernel le gestisce tutte subito completando gli handshake, ma il programma le processa una alla volta con accept(). La coda fa da buffer tra i due.
+Tutto questo avviene prima che il tuo programma faccia qualsiasi cosa. Quando l'handshake è completato, la connessione è già stabilita a tutti gli effetti — il kernel la mette in una coda interna chiamata accept queue e aspetta che il programma chiami `accept()` per prenderla.
+
+Il backlog è la dimensione massima di quella coda. Esiste perché potrebbero arrivare più connessioni quasi simultaneamente — il kernel le gestisce tutte subito completando gli handshake, ma il programma le processa una alla volta con `accept()`. La coda fa da buffer tra i due.
+
 Se la coda è piena e arriva un nuovo client, il kernel scarta il SYN direttamente — il client riceverà un timeout e riproverà.
-SOMAXCONN usa il massimo consentito dal sistema operativo — su Linux tipicamente 128.
+
+`SOMAXCONN` usa il massimo consentito dal sistema operativo — su Linux tipicamente 128.
 
 ---
 
@@ -135,7 +138,7 @@ _pollFds.push_back(server_pollfd);
 
 La distinzione tra `events` e `revents` è importante — `events` lo imposti tu prima di chiamare `poll()`, `revents` lo riempie il kernel quando `poll()` ritorna. Sono separati perché potresti voler monitorare eventi diversi su fd diversi.
 
-`revents` è una **maschera di bit** — può avere più flag attivi contemporaneamente. Per esempio un fd potrebbe avere sia `POLLIN` che `POLLHUP` settati nello stesso momento. Per questo motivo va sempre controllato con `&` e non con `==`:
+`revents` è una **maschera di bit** — può avere più flag attivi contemporaneamente. Per esempio un fd potrebbe avere sia `POLLIN` che `POLLHUP` settati nello stesso momento. Per questo motivo va sempre controllato con `&` e non con `==`.
 
 Il server socket viene aggiunto come primo elemento del vettore con `POLLIN` — così `poll()` ci segnala quando un nuovo client vuole connettersi. Da quel momento in poi, ogni volta che `accept()` crea un nuovo client socket, aggiungeremo un nuovo elemento a `_pollFds` con lo stesso pattern. Quando un client si disconnette, rimuoveremo il suo elemento dal vettore.
 
@@ -144,3 +147,15 @@ Il server socket viene aggiunto come primo elemento del vettore con `POLLIN` —
 # Server — Loop principale
 
 Il loop principale del server è un ciclo infinito che chiama `poll()` per aspettare eventi su tutti i file descriptor aperti. Quando `poll()` ritorna, controlla quali fd hanno eventi attivi e agisce di conseguenza.
+
+## poll() — timeout
+
+`poll()` è una funzione bloccante, si ferma finché non succede un evento. Il suo comportamento dipende dal parametro `timeout`:
+
+| Valore | Comportamento |
+|---|---|
+| `-1` | aspetta all'infinito, ritorna solo quando succede qualcosa |
+| `0` | non aspetta per niente, controlla e ritorna subito (non-bloccante ma consuma più CPU) |
+| `5000` | aspetta massimo 5 secondi, poi ritorna comunque anche se non accade niente |
+
+Nel server usiamo `POLL_TIMEOUT = -1` — vogliamo aspettare eventi senza consumare CPU inutilmente.

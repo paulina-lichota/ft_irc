@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:26:11 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/23 19:10:07 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/24 14:30:00 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,32 +44,13 @@ Server::~Server() {
 		close(_pollFds[i].fd);
 }
 
-/* -------------------------------------------------------------------------- */
+/* ------------------------------------ Main run loop ----------------------------------- */
 
-/*
-	poll() e' una funziona bloccante, si ferma finche' non succede un evento
-	ma ha un parametro timeout che cambia il suo comportamento:
-
-	timeout = -1 → aspetta all'infinito, ritorna solo quando succede qualcosa
-	timeout = 0 → non aspetta per niente, controlla e ritorna subito (non-bloccante ma consuma piu' CPU)
-	timeout = 5000 → aspetta massimo 5 secondi, poi ritorna comunque (anche se non accade niente)
-*/
-/*
-	_pollFds e' un vector di <struct pollfd>.
-	Nella struct prima si definisce l'fd da monitorare e l'event da ascoltare.
-	poll() mette gli eventi passati in _fd[].revents (anche alcuni non richiesti)
-	I tipi di evento sono:
-	POLLIN → ci sono dati da leggere (o una nuova connessione sul server socket)
-	POLLHUP → il client si è disconnesso
-	POLLERR → errore sul fd
-	C'e' anche:
-	POLLOUT → scrivere senza bloccarti -> serve quando buffer scrittura pieno
-*/
 void	Server::run(){
 	while (true) {
 		int ret = poll(&_pollFds[0], _pollFds.size(), POLL_TIMEOUT);
 		if (ret < 0) {
-			if (errno == EINTR) // poll() è stato interrotto da un segnale, possiamo ignorare e continuare
+			if (errno == EINTR) // interrotto da un segnale, possiamo ignorare e continuare
 				continue;
 			std::cerr << "Error in poll()" << std::endl;
 			break;
@@ -78,18 +59,8 @@ void	Server::run(){
 			handleNewConnection();
 		for (size_t i = 1; i < _pollFds.size(); i++) {
 			if (_pollFds[i].revents & POLLIN) {
-				char buffer[IRC_MSG_MAX_LEN]; // buffer temporaneo per leggere dati da client socket
-				int n = recv(_pollFds[i].fd, buffer, sizeof(buffer) - 1, 0); //leggo dati da client socket, li metto in buffer
-				if (n <= 0) {
-					handleClientDisconnection(i); // se n == 0 -> client ha chiuso connessione, se n < 0 -> errore (es. client disconnesso improvvisamente)
-					i--;
-					continue;
-				} else {
-					std::cout << "Received from client fd " << _pollFds[i].fd << ": " << std::string(buffer, n) << std::endl;
-					_clients[_pollFds[i].fd].appendToBuffer(std::string(buffer, n)); // aggiungo dati al buffer del client
-					// estraggo messaggio completo (buffer)
-					// gestisco messaggio (comandi, canali, ecc)
-				}
+				if (!handleClientMessage(i)) // se ritorna false -> client disconnesso
+					i--; // se client disconnesso, handleClientMessage() chiama handleClientDisconnection() che rimuove il client da _pollFds
 			}
 			else if (_pollFds[i].revents & (POLLHUP | POLLERR)) { //POLLHUP -> client si è disconnesso, POLLERR -> errore sul fd
 				handleClientDisconnection(i);
@@ -99,6 +70,8 @@ void	Server::run(){
 		}
 	}
 }
+
+/* ------------------------------------ Handlers ----------------------------------- */
 
 // accetto nuova connessione, ottengo nuovo client socket
 // setto client socket non-bloccante
@@ -114,16 +87,9 @@ void Server::handleNewConnection() {
 	}
 	fcntl(clientFd, F_SETFL, O_NONBLOCK); // setto client socket non-bloccante
 	addPollFd(clientFd); // aggiungo client socket a _pollFds per monitorarlo
-	_clients[clientFd] = Client(clientFd); // creo oggetto Client associato al client socket, lo salvo in _clients con fd come chiave
+	std::string hostname = inet_ntoa(clientAddr.sin_addr); // ottengo hostname del client da indirizzo IP
+	_clients[clientFd] = Client(clientFd, hostname); // creo oggetto Client associato al client socket, lo salvo in _clients con fd come chiave
 	std::cout << "New client connected: fd " << clientFd << std::endl;
-}
-
-void Server::addPollFd(int fd) {
-	struct pollfd newPollFd;
-	newPollFd.fd = fd;
-	newPollFd.events = POLLIN;
-	newPollFd.revents = 0;
-	_pollFds.push_back(newPollFd);
 }
 
 void Server::handleClientDisconnection(size_t index) {
@@ -133,7 +99,34 @@ void Server::handleClientDisconnection(size_t index) {
 	_pollFds.erase(_pollFds.begin() + index);
 }
 
-/* -------------------------------------------------------------------------- */
+bool Server::handleClientMessage(size_t index) {
+	char buffer[IRC_MSG_MAX_LEN]; // buffer temporaneo per leggere dati da client socket
+	int n = recv(_pollFds[index].fd, buffer, sizeof(buffer) - 1, 0); //leggo dati da client socket, li metto in buffer
+	if (n <= 0) {
+		handleClientDisconnection(index); // se n == 0 -> client ha chiuso connessione, se n < 0 -> errore (es. client disconnesso improvvisamente)
+		return (false);
+	}
+	std::cout << "Received from client fd " << _pollFds[index].fd << ": " << std::string(buffer, n) << std::endl;
+	_clients[_pollFds[index].fd].appendToBuffer(std::string(buffer, n)); // aggiungo dati al buffer del client
+	std::string message = _clients[_pollFds[index].fd].extractMessageFromBuffer();
+	if (!message.empty()) {
+		std::cout << "Complete message from client fd " << _pollFds[index].fd << ": " << message << std::endl;
+		// gestisco messaggio (comandi, canali, ecc)
+	}
+	return (true);
+}
+
+/* ------------------------------------ Utils ----------------------------------- */
+
+void Server::addPollFd(int fd) {
+	struct pollfd newPollFd;
+	newPollFd.fd = fd;
+	newPollFd.events = POLLIN;
+	newPollFd.revents = 0;
+	_pollFds.push_back(newPollFd);
+}
+
+/* ------------------------------------ Static methods ----------------------------------- */
 
 // porte 0 - 1023 well-known ports / porte privilegiate, richiedono privilegi di root
 // le porte sono numeri a 16 bit, quindi il max è 2¹⁶ - 1

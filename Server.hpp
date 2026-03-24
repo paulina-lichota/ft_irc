@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/23 19:11:02 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/24 12:42:34 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,9 +29,13 @@ public:
 	~Server();
 
 	void run();
-	void addPollFd(int fd);
+	// Handlers:
 	void handleNewConnection();
 	void handleClientDisconnection(size_t index);
+	bool handleClientMessage(size_t index); // ritorna false se client si è disconnesso, true altrimenti
+	// Utility:
+	void addPollFd(int fd);
+	// Static methods:
 	static bool isValidPort(const std::string &port);
 	static bool isValidPassword(const std::string &password);
 };
@@ -44,14 +48,5 @@ public:
 //     short events;   // cosa vuoi sapere (es. POLLIN)
 //     short revents;  // cosa è successo (lo riempie poll())
 // };
-
-/*
-	I valori principali:
-
-	POLLIN → ci sono dati da leggere (o una nuova connessione sul server socket)
-	POLLOUT → puoi scrivere senza bloccarti
-	POLLHUP → il client si è disconnesso
-	POLLERR → errore sul fd
-*/
 
 #endif
