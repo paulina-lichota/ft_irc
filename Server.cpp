@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: francema <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/24 19:10:07 by francema         ###   ########.fr       */
+/*   Updated: 2026/03/24 19:29:46 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,8 +125,7 @@ bool Server::handleClientMessage(size_t index) {
 		std::cout << std::endl;
 		// qui va la logica per processare il messaggio completo, es. parsing comando, esecuzione comando, invio risposta
 		// MessageDispatcher(msg, _clients[_pollFds[index].fd]); // dispatch del messaggio al dispatcher, che processa il comando e invia eventuali risposte
-
-
+		
 	}
 	return (true);
 }
