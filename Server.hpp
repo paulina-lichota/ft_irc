@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: francema <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/24 14:43:21 by francema         ###   ########.fr       */
+/*   Updated: 2026/03/24 16:41:19 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 #include "includes.hpp"
 #include "Client.hpp"
+#include "Message.hpp"
 
 class Server {
 private:
@@ -42,14 +43,5 @@ public:
 	static bool isValidPort(const std::string &port);
 	static bool isValidPassword(const std::string &password);
 };
-
-// struct pollfd è una struttura dati del sistema operativo che contiene il file descriptor da osservare,
-// la maschera degli eventi di interesse e la maschera degli eventi che si sono verificati.
-// Viene passata a poll() come array per il monitoraggio simultaneo di più fd.
-// struct pollfd {
-//     int   fd;       // quale fd monitorare
-//     short events;   // cosa vuoi sapere (es. POLLIN)
-//     short revents;  // cosa è successo (lo riempie poll())
-// };
 
 #endif

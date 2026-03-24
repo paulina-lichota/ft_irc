@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: francema <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/22 16:24:21 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/24 16:19:47 by francema         ###   ########.fr       */
+/*   Updated: 2026/03/24 16:29:32 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,9 +17,10 @@ Client::Client() : _fd(-1),
 	_username(""),
 	_realname(""),
 	_hostname(""),
-	_buffer("") {}
-//	_passwordAccepted(false),
-//	_registered(false) {}
+	_buffer("")
+	// _passwordAccepted(false),
+	//_registered(false)
+	{}
 
 Client::Client(int fd, const std::string &hostname) : _fd(fd),
 	_nickname(""),
@@ -29,6 +30,7 @@ Client::Client(int fd, const std::string &hostname) : _fd(fd),
 	_buffer("") {}
 	// _passwordAccepted(false),
 	// _registered(false)
+
 
 
 Client::Client(const Client& other): _fd(other._fd),

@@ -3,13 +3,12 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: francema <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/24 16:15:47 by francema         ###   ########.fr       */
+/*   Updated: 2026/03/24 16:57:44 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
 
 #include "Server.hpp"
 
@@ -112,6 +111,13 @@ bool Server::handleClientMessage(size_t index) {
 	std::string message;
 	while (!(message = _clients[_pollFds[index].fd].extractMessageFromBuffer()).empty()) {
 		std::cout << "Complete message: " << message << std::endl;
+		Message msg(message); // creo oggetto Message parsando il messaggio completo
+		std::cout << "Parsed message - Prefix: " << msg.getPrefix() << ", Command: " << msg.getCommand() << ", Params: ";
+		for (size_t i = 0; i < msg.getParams().size(); i++) {
+			std::cout << "[" << msg.getParams()[i] << "]";
+		}
+		std::cout << ", Trailing: " << msg.getTrailing();
+		std::cout << std::endl;
 		// qui va la logica per processare il messaggio completo, es. parsing comando, esecuzione comando, invio risposta
 	}
 	return (true);
