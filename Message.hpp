@@ -22,6 +22,8 @@ public:
 	const std::string&				getPrefix()		const;
 	const std::string&				getCommand()	const;
 	const std::vector<std::string>&	getParams()		const;
+	bool							isValid()		const;
+	const std::string&				getError()		const;
 };
 
 #endif

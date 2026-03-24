@@ -19,8 +19,15 @@ Message &Message::operator=(const Message &other) {
 }
 Message::~Message() {}
 
-Message::Message(const std::string &raw) {
+Message::Message(const std::string &raw): _prefix(""), _command(""), _params(), _valid(true), _error("") {
 	std::string line = raw;
+
+	//trim leading spaces
+	size_t start = line.find_first_not_of(' ');
+	if (start != std::string::npos)
+		line = line.substr(start);
+	else
+		line.clear();
 
 	// 1. prefix extraction
 	if (!line.empty() && line[0] == ':') {
@@ -33,6 +40,13 @@ Message::Message(const std::string &raw) {
 		_prefix = line.substr(1, space - 1);
 		line = line.substr(space + 1); //taglia fino all'inizio del cmd; restituisce da cmd in poi
 	}
+
+	//trim leading spaces after prefix
+	start = line.find_first_not_of(' ');
+	if (start != std::string::npos)
+		line = line.substr(start);
+	else
+		line.clear();
 
 	// 2. command extraction
 	size_t space = line.find(' ');
@@ -71,3 +85,5 @@ Message::Message(const std::string &raw) {
 const std::string&	Message::getPrefix() const { return _prefix; }
 const std::string&	Message::getCommand() const { return _command; }
 const std::vector<std::string>&	Message::getParams() const { return _params; }
+const std::string&	Message::getError() const { return _error; }
+bool	Message::isValid() const { return _valid; }
