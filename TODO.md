@@ -1,11 +1,11 @@
 # TODO — ft_irc
 
-- [ ] Gestione segnali (SIGINT, SIGTERM) per chiusura pulita del server?
+- [X] Gestione segnali (SIGINT, SIGTERM) per chiusura pulita del server?
 
 ## Fase 0 — Parsing argomenti
 - [X] Validazione numero argomenti
 - [X] Validazione porta (intervallo 1-65535)
-- [x] Validazione password (controlla criteri di sicurezza)
+- [X] Validazione password (controlla criteri di sicurezza)
 
 ## Fase 1 — Server core
 - [X] Classe Server — attributi e costruttore
@@ -25,7 +25,7 @@
 
 ## Fase 2 — Handshake (tutti insieme)
 - [ ] PASS
-- [ ] NICK
+- [ ] NICK + check nickname uniqueness
 - [ ] USER
 - [ ] Welcome messages (001 002 003 004)
 - [ ] PING / PONG
@@ -42,6 +42,7 @@
 ## Fase 4 — Operatori
 - [ ] KICK
 - [ ] INVITE
+- [ ] Test con nc — messaggi parziali
 - [ ] TOPIC (modifica)
 - [ ] MODE +i
 - [ ] MODE +t

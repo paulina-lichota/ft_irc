@@ -3,18 +3,26 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: francema <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/02/20 15:28:50 by plichota          #+#    #+#             */
-/*   Updated: 2026/03/24 17:03:48 by francema         ###   ########.fr       */
+/*   Created: Invalid date        by                   #+#    #+#             */
+/*   Updated: 2026/03/24 17:21:36 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+
+
 #include "includes.hpp"
+
+#include "signal.hpp"
 #include "Server.hpp"
 
-// ./ircserv <port> <password>
-int main(int argc, char **argv) {
+// ./ircserv 6667 password
+// nc -C 127.0.0.1 6667
+
+int main(int argc, char **argv)
+{
+	init_signals();
 	if (argc != 3) {
 		std::cerr << "Usage: " << argv[0] << " <port> <password>" << std::endl;
 		return (1);

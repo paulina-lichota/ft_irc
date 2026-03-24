@@ -6,11 +6,13 @@
 /*   By: francema <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/24 17:14:32 by francema         ###   ########.fr       */
+/*   Updated: 2026/03/24 19:10:07 by francema         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
+#include "Message.hpp"
+#include "signal.hpp"
 
 Server::Server(const int port, const std::string &password) : _port(port), _password(password) {
 	_serverFd = socket(AF_INET, SOCK_STREAM, 0); //AF_INET -> socket IPv4, SOCK_STREAM -> socket TCP (stream-oriented), protocollo 0 -> TCP (default per SOCK_STREAM)
@@ -40,6 +42,7 @@ Server::Server(const int port, const std::string &password) : _port(port), _pass
 }
 
 Server::~Server() {
+	std::cout << "Chiusura server in corso..." << std::endl;
 	for (size_t i = 0; i < _pollFds.size(); i++)
 		close(_pollFds[i].fd);
 }
@@ -47,7 +50,8 @@ Server::~Server() {
 /* ------------------------------------ Main run loop ----------------------------------- */
 
 void	Server::run(){
-	while (true) {
+	while (received_signal == 0) // SIGINT
+	{
 		int ret = poll(&_pollFds[0], _pollFds.size(), POLL_TIMEOUT);
 		if (ret < 0) {
 			if (errno == EINTR) // interrotto da un segnale, possiamo ignorare e continuare
@@ -99,15 +103,16 @@ void Server::handleClientDisconnection(size_t index) {
 	_pollFds.erase(_pollFds.begin() + index);
 }
 
+// buffer si riferisce al singolo client
 bool Server::handleClientMessage(size_t index) {
-	char buffer[IRC_MSG_MAX_LEN]; // buffer temporaneo per leggere dati da client socket
-	int n = recv(_pollFds[index].fd, buffer, sizeof(buffer) - 1, 0); //leggo dati da client socket, li metto in buffer
+	char s_buffer[IRC_MSG_MAX_LEN]; // buffer temporaneo per leggere dati da client socket
+	int n = recv(_pollFds[index].fd, s_buffer, sizeof(s_buffer) - 1, 0); //leggo dati da client socket, li metto in buffer
 	if (n <= 0) {
 		handleClientDisconnection(index); // se n == 0 -> client ha chiuso connessione, se n < 0 -> errore (es. client disconnesso improvvisamente)
 		return (false);
 	}
-	std::cout << "Received from client fd " << _pollFds[index].fd << ": " << std::string(buffer, n) << std::endl;
-	_clients[_pollFds[index].fd].appendToBuffer(std::string(buffer, n)); // aggiungo dati al buffer del client
+	std::cout << "Received from client fd " << _pollFds[index].fd << ": " << std::string(s_buffer, n) << std::endl;
+	_clients[_pollFds[index].fd].appendToBuffer(std::string(s_buffer, n)); // aggiungo dati al buffer del client
 	std::string message;
 	while (!(message = _clients[_pollFds[index].fd].extractMessageFromBuffer()).empty()) {
 		std::cout << "Complete message: " << message << std::endl;
@@ -119,6 +124,9 @@ bool Server::handleClientMessage(size_t index) {
 		// std::cout << ", Trailing: " << msg.getTrailing();
 		std::cout << std::endl;
 		// qui va la logica per processare il messaggio completo, es. parsing comando, esecuzione comando, invio risposta
+		// MessageDispatcher(msg, _clients[_pollFds[index].fd]); // dispatch del messaggio al dispatcher, che processa il comando e invia eventuali risposte
+
+
 	}
 	return (true);
 }
