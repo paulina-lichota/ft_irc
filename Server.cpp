@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:26:11 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/24 16:02:08 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/24 16:04:09 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -143,6 +143,8 @@ bool	Server::isValidPort(const std::string &port) {
 
 // no trim spazi, IRC accetta qualsiasi stringa dopo "PASS " come password
 // se un messaggio supera i 512 caratteri viene troncato, ignorando il resto
+// IRC non impone criteri di sicurezza, si possono potenzialmente imporre criteri aggiuntivi
+//   ma questi vanno gestiti lato server, non dipende dal protocollo IRC
 bool	Server::isValidPassword(const std::string &password) {
 	if (password.empty())
 		return (false);

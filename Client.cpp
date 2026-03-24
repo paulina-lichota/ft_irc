@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/22 16:24:21 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/24 15:52:33 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/24 16:04:51 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,20 +17,23 @@ Client::Client() : _fd(-1),
 	_username(""),
 	_realname(""),
 	_hostname(""),
-	_buffer(""),
-	_passwordAccepted(false),
-	_registered(false) {}
+	_buffer("")
+	// _passwordAccepted(false),
+	// _registered(false) 
+{}
 
 Client::Client(int fd, const std::string &hostname) : _fd(fd),
 	_nickname(""),
 	_username(""),
 	_realname(""),
 	_hostname(hostname),
-	_buffer(""),
-	_passwordAccepted(false),
-	_registered(false) {}
+	_buffer("")
+	// _passwordAccepted(false),
+	// _registered(false)
+{}
 
-Client::~Client() {}
+Client::~Client()
+{}
 
 /* -------------------------------------------------------------------------- */
 
