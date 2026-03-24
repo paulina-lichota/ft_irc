@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/24 18:30:04 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/24 18:57:15 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,7 +124,9 @@ bool Server::handleClientMessage(size_t index) {
 		// std::cout << ", Trailing: " << msg.getTrailing();
 		std::cout << std::endl;
 		// qui va la logica per processare il messaggio completo, es. parsing comando, esecuzione comando, invio risposta
-		// essageDispatcher(msg, _clients[_pollFds[index].fd]); // dispatch del messaggio al dispatcher, che processa il comando e invia eventuali risposte
+		// MessageDispatcher(msg, _clients[_pollFds[index].fd]); // dispatch del messaggio al dispatcher, che processa il comando e invia eventuali risposte
+
+		
 	}
 	return (true);
 }

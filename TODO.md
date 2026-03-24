@@ -21,11 +21,11 @@
 - [X] Estrazione messaggi completi (\r\n)
 - [X] Disconnessione client (POLLHUP / recv() == 0)
 - [X] Classe Client — attributi base
-- [ ] Parser messaggi IRC (prefix, command, params, trailing)
+- [X] Parser messaggi IRC (prefix, command, params, trailing)
 
 ## Fase 2 — Handshake (tutti insieme)
 - [ ] PASS
-- [ ] NICK
+- [ ] NICK + check nickname uniqueness
 - [ ] USER
 - [ ] Welcome messages (001 002 003 004)
 - [ ] PING / PONG

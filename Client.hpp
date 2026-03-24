@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/22 16:23:34 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/24 18:16:58 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/24 19:00:40 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,12 +32,13 @@ class Client {
 		Client& operator=(const Client& other);
 		~Client();
 
-			//Getters
-			std::string &getBuffer();
-			int getFd() const;
+		// Getters
+		std::string &getBuffer();
+		int getFd() const;
 
-			void appendToBuffer(const std::string &data);
-			std::string extractMessageFromBuffer(); // estrae un messaggio completo dal buffer, se presente, e lo rimuove dal buffer
+		// Message
+		void appendToBuffer(const std::string &data);
+		std::string extractMessageFromBuffer(); // estrae un messaggio completo dal buffer, se presente, e lo rimuove dal buffer
 };
 
 #endif

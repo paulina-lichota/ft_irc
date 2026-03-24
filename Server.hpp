@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/24 18:30:33 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/24 18:56:05 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,15 +32,29 @@ class Server {
 		~Server();
 
 		void run();
+		
 		// Handlers:
 		void handleNewConnection();
 		void handleClientDisconnection(size_t index);
 		bool handleClientMessage(size_t index); // ritorna false se client si è disconnesso, true altrimenti
+
 		// Utility:
 		void addPollFd(int fd);
+
 		// Static methods:
 		static bool isValidPort(const std::string &port);
 		static bool isValidPassword(const std::string &password);
+
+		// User access
+		
+
+		bool checkServerPassword(const std::string &password);
+		// nick: nick unico
+		// 
+
+
+		// Channels
+		// void addChannel(Channel channel);
 };
 
 #endif
