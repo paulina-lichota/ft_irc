@@ -25,7 +25,7 @@
 
 ## Fase 2 — Handshake (tutti insieme)
 - [ ] PASS
-- [ ] NICK
+- [ ] NICK + check nickname uniqueness
 - [ ] USER
 - [ ] Welcome messages (001 002 003 004)
 - [ ] PING / PONG
@@ -42,6 +42,7 @@
 ## Fase 4 — Operatori
 - [ ] KICK
 - [ ] INVITE
+- [ ] Test con nc — messaggi parziali
 - [ ] TOPIC (modifica)
 - [ ] MODE +i
 - [ ] MODE +t

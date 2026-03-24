@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/24 17:18:04 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/24 18:56:05 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include "includes.hpp"
 #include "Client.hpp"
 #include "Message.hpp"
+#include "Channel.hpp"
 
 class Server {
 	private:
@@ -25,20 +26,35 @@ class Server {
 		std::vector<struct pollfd>	_pollFds; // array di fd dei clients da monitorare
 		std::map<int, Client>		_clients;	 // associazione fd -> oggetto client
 		static const int			POLL_TIMEOUT = -1; // -1 per aspettare eventi all'infinito
+		std::vector<Channel>		_channels; // lista di canali esistenti, ogni canale ha una lista di client connessi
 	public:
 		Server(const int port, const std::string &password);
 		~Server();
 
 		void run();
+		
 		// Handlers:
 		void handleNewConnection();
 		void handleClientDisconnection(size_t index);
 		bool handleClientMessage(size_t index); // ritorna false se client si è disconnesso, true altrimenti
+
 		// Utility:
 		void addPollFd(int fd);
+
 		// Static methods:
 		static bool isValidPort(const std::string &port);
 		static bool isValidPassword(const std::string &password);
+
+		// User access
+		
+
+		bool checkServerPassword(const std::string &password);
+		// nick: nick unico
+		// 
+
+
+		// Channels
+		// void addChannel(Channel channel);
 };
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/24 17:44:26 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/24 19:07:59 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,15 +103,16 @@ void Server::handleClientDisconnection(size_t index) {
 	_pollFds.erase(_pollFds.begin() + index);
 }
 
+// buffer si riferisce al singolo client
 bool Server::handleClientMessage(size_t index) {
-	char buffer[IRC_MSG_MAX_LEN]; // buffer temporaneo per leggere dati da client socket
-	int n = recv(_pollFds[index].fd, buffer, sizeof(buffer) - 1, 0); //leggo dati da client socket, li metto in buffer
+	char s_buffer[IRC_MSG_MAX_LEN]; // buffer temporaneo per leggere dati da client socket
+	int n = recv(_pollFds[index].fd, s_buffer, sizeof(s_buffer) - 1, 0); //leggo dati da client socket, li metto in buffer
 	if (n <= 0) {
 		handleClientDisconnection(index); // se n == 0 -> client ha chiuso connessione, se n < 0 -> errore (es. client disconnesso improvvisamente)
 		return (false);
 	}
-	std::cout << "Received from client fd " << _pollFds[index].fd << ": " << std::string(buffer, n) << std::endl;
-	_clients[_pollFds[index].fd].appendToBuffer(std::string(buffer, n)); // aggiungo dati al buffer del client
+	std::cout << "Received from client fd " << _pollFds[index].fd << ": " << std::string(s_buffer, n) << std::endl;
+	_clients[_pollFds[index].fd].appendToBuffer(std::string(s_buffer, n)); // aggiungo dati al buffer del client
 	std::string message;
 	while (!(message = _clients[_pollFds[index].fd].extractMessageFromBuffer()).empty()) {
 		std::cout << "Complete message: " << message << std::endl;
@@ -122,8 +123,10 @@ bool Server::handleClientMessage(size_t index) {
 		}
 		std::cout << ", Trailing: " << msg.getTrailing();
 		std::cout << std::endl;
-		//esecuzione comando
-		//invio risposta
+		// qui va la logica per processare il messaggio completo, es. parsing comando, esecuzione comando, invio risposta
+		// MessageDispatcher(msg, _clients[_pollFds[index].fd]); // dispatch del messaggio al dispatcher, che processa il comando e invia eventuali risposte
+
+
 	}
 	return (true);
 }
