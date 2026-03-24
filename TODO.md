@@ -21,7 +21,7 @@
 - [X] Estrazione messaggi completi (\r\n)
 - [X] Disconnessione client (POLLHUP / recv() == 0)
 - [X] Classe Client — attributi base
-- [ ] Parser messaggi IRC (prefix, command, params, trailing)
+- [X] Parser messaggi IRC (prefix, command, params, trailing)
 
 ## Fase 2 — Handshake (tutti insieme)
 - [ ] PASS

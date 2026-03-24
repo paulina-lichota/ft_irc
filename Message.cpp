@@ -68,7 +68,7 @@ Message::Message(const std::string &raw): _prefix(""), _command(""), _params(), 
 	// 3. params and trailing extraction
 	while (!line.empty()) {
 		if (line[0] == ':') {
-			_trailing = line.substr(1);
+			_params.push_back(line.substr(1));
 			break;
 		}
 		if (line[0] == ' ') {
@@ -88,9 +88,7 @@ Message::Message(const std::string &raw): _prefix(""), _command(""), _params(), 
 /* -------------------------------------------------------------------------- */
 
 const std::string&	Message::getPrefix() const { return _prefix; }
-
 const std::string&	Message::getCommand() const { return _command; }
-
 const std::vector<std::string>&	Message::getParams() const { return _params; }
 const std::string&	Message::getError() const { return _error; }
 bool	Message::isValid() const { return _valid; }
