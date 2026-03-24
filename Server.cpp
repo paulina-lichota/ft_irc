@@ -3,14 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/24 16:57:44 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/24 17:19:41 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
+#include "Message.hpp"
+#include "signal.hpp"
 
 Server::Server(const int port, const std::string &password) : _port(port), _password(password) {
 	_serverFd = socket(AF_INET, SOCK_STREAM, 0); //AF_INET -> socket IPv4, SOCK_STREAM -> socket TCP (stream-oriented), protocollo 0 -> TCP (default per SOCK_STREAM)
@@ -40,6 +42,7 @@ Server::Server(const int port, const std::string &password) : _port(port), _pass
 }
 
 Server::~Server() {
+	std::cout << "Chiusura server in corso..." << std::endl;
 	for (size_t i = 0; i < _pollFds.size(); i++)
 		close(_pollFds[i].fd);
 }
@@ -47,7 +50,8 @@ Server::~Server() {
 /* ------------------------------------ Main run loop ----------------------------------- */
 
 void	Server::run(){
-	while (true) {
+	while (received_signal == 0) // SIGINT
+	{
 		int ret = poll(&_pollFds[0], _pollFds.size(), POLL_TIMEOUT);
 		if (ret < 0) {
 			if (errno == EINTR) // interrotto da un segnale, possiamo ignorare e continuare
@@ -116,7 +120,7 @@ bool Server::handleClientMessage(size_t index) {
 		for (size_t i = 0; i < msg.getParams().size(); i++) {
 			std::cout << "[" << msg.getParams()[i] << "]";
 		}
-		std::cout << ", Trailing: " << msg.getTrailing();
+		// std::cout << ", Trailing: " << msg.getTrailing();
 		std::cout << std::endl;
 		// qui va la logica per processare il messaggio completo, es. parsing comando, esecuzione comando, invio risposta
 	}

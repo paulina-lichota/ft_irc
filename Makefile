@@ -1,15 +1,3 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    Makefile                                           :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: francema <marvin@42.fr>                    +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2026/03/21 21:08:23 by cwannhed          #+#    #+#              #
-#    Updated: 2026/03/24 17:05:40 by francema         ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
-
 NAME = ircserv
 
 CXX = c++
@@ -18,7 +6,8 @@ CXXFLAGS = -Wall -Wextra -Werror -Wshadow -std=c++98
 SRC = main.cpp \
 	Server.cpp \
 	Client.cpp \
-	Message.cpp
+	Message.cpp \
+	signal.cpp
 
 all: $(NAME)
 

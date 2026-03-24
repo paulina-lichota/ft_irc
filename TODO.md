@@ -1,6 +1,6 @@
 # TODO — ft_irc
 
-- [ ] Gestione segnali (SIGINT, SIGTERM) per chiusura pulita del server?
+- [X] Gestione segnali (SIGINT, SIGTERM) per chiusura pulita del server?
 
 ## Fase 0 — Parsing argomenti
 - [X] Validazione numero argomenti
