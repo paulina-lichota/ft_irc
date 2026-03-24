@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:26:11 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/24 14:35:57 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/24 16:02:08 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -141,15 +141,12 @@ bool	Server::isValidPort(const std::string &port) {
 	return (port_num > 1024 && port_num <= 65535);
 }
 
-// criteri per password??
-// no spazi? rischio di troncamento da parte del server quando client manda messaggi
-// (vanno gestiti con buffer)
+// no trim spazi, IRC accetta qualsiasi stringa dopo "PASS " come password
+// se un messaggio supera i 512 caratteri viene troncato, ignorando il resto
 bool	Server::isValidPassword(const std::string &password) {
 	if (password.empty())
 		return (false);
-	for (size_t i = 0; i < password.size(); i++) {
-		if (std::isspace(password[i]))
-			return (false);
-	}
+	if (password.size() > 510) // max 510 caratteri escluso "PASS " (standard IRC)
+		return (false);
 	return (true);
 }
