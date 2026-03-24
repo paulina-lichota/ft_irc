@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/24 17:18:04 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/24 18:30:33 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include "includes.hpp"
 #include "Client.hpp"
 #include "Message.hpp"
+#include "Channel.hpp"
 
 class Server {
 	private:
@@ -25,6 +26,7 @@ class Server {
 		std::vector<struct pollfd>	_pollFds; // array di fd dei clients da monitorare
 		std::map<int, Client>		_clients;	 // associazione fd -> oggetto client
 		static const int			POLL_TIMEOUT = -1; // -1 per aspettare eventi all'infinito
+		std::vector<Channel>		_channels; // lista di canali esistenti, ogni canale ha una lista di client connessi
 	public:
 		Server(const int port, const std::string &password);
 		~Server();

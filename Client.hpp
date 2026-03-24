@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/22 16:23:34 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/24 16:29:53 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/24 18:16:58 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,28 +16,28 @@
 # include "includes.hpp"
 
 class Client {
-private:
-	int			_fd;
-	std::string	_nickname; //nickname scelto dal client, deve essere unico (NICK <nickname>)
-	std::string	_username; //settato con USER <username> <hostname> <servername> <realname>, usato per identificare il client, non appare nei messaggi, usato per i prefix dei messaggi (es. :nickname!username@hostname PRIVMSG #channel :message)
-	std::string	_realname; // ''
-	std::string	_hostname; // ''
-	std::string	_buffer; // buffer per dati ricevuti dal client, usato per gestire messaggi incompleti
-	// bool		_passwordAccepted; // true se il client ha inviato PASS <password> corretta, altrimenti false
-	// bool		_registered; // true se il client ha completato la registrazione (PASS + NICK + USER), altrimenti false
-public:
-	Client();
-	Client(int fd, const std::string &hostname);
-	Client(const Client& other);
-	Client& operator=(const Client& other);
-	~Client();
+	private:
+		int			_fd;
+		std::string	_nickname; //nickname scelto dal client, deve essere unico (NICK <nickname>)
+		std::string	_username; //settato con USER <username> <hostname> <servername> <realname>, usato per identificare il client, non appare nei messaggi, usato per i prefix dei messaggi (es. :nickname!username@hostname PRIVMSG #channel :message)
+		std::string	_realname; // ''
+		std::string	_hostname; // host or IP address
+		std::string	_buffer; // buffer per dati ricevuti dal client, usato per gestire messaggi incompleti
+		// bool		_passwordAccepted; // true se il client ha inviato PASS <password> corretta, altrimenti false
+		// bool		_registered; // true se il client ha completato la registrazione (PASS + NICK + USER), altrimenti false
+	public:
+		Client();
+		Client(int fd, const std::string &hostname);
+		Client(const Client& other);
+		Client& operator=(const Client& other);
+		~Client();
 
-		//Getters
-		std::string &getBuffer();
-		int getFd() const;
+			//Getters
+			std::string &getBuffer();
+			int getFd() const;
 
-		void appendToBuffer(const std::string &data);
-		std::string extractMessageFromBuffer(); // estrae un messaggio completo dal buffer, se presente, e lo rimuove dal buffer
+			void appendToBuffer(const std::string &data);
+			std::string extractMessageFromBuffer(); // estrae un messaggio completo dal buffer, se presente, e lo rimuove dal buffer
 };
 
 #endif
