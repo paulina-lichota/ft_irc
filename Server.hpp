@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/24 18:56:05 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/24 20:17:10 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ class Server {
 		std::map<int, Client>		_clients;	 // associazione fd -> oggetto client
 		static const int			POLL_TIMEOUT = -1; // -1 per aspettare eventi all'infinito
 		std::vector<Channel>		_channels; // lista di canali esistenti, ogni canale ha una lista di client connessi
+		std::map<std::string, void (Server::*)(const Message&, const Client&)> _actions; // mappa comando + pointer a funzione
 	public:
 		Server(const int port, const std::string &password);
 		~Server();
@@ -45,16 +46,14 @@ class Server {
 		static bool isValidPort(const std::string &port);
 		static bool isValidPassword(const std::string &password);
 
-		// User access
-		
+		// Dispatcher
+		void initActions();
+		void dispatchAction(const Message &msg, const Client &client);
 
-		bool checkServerPassword(const std::string &password);
-		// nick: nick unico
-		// 
+		// Actions
+		// TODO
+		void handlePass(const Message &msg, const Client &client);
 
-
-		// Channels
-		// void addChannel(Channel channel);
 };
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/24 19:29:46 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/24 20:22:36 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include "signal.hpp"
 
 Server::Server(const int port, const std::string &password) : _port(port), _password(password) {
+	initActions();
 	_serverFd = socket(AF_INET, SOCK_STREAM, 0); //AF_INET -> socket IPv4, SOCK_STREAM -> socket TCP (stream-oriented), protocollo 0 -> TCP (default per SOCK_STREAM)
 	if (_serverFd < 0)
 		throw std::runtime_error("Error creating socket");
@@ -124,11 +125,44 @@ bool Server::handleClientMessage(size_t index) {
 		// std::cout << ", Trailing: " << msg.getTrailing();
 		std::cout << std::endl;
 		// qui va la logica per processare il messaggio completo, es. parsing comando, esecuzione comando, invio risposta
-		// MessageDispatcher(msg, _clients[_pollFds[index].fd]); // dispatch del messaggio al dispatcher, che processa il comando e invia eventuali risposte
+		dispatchAction(msg, _clients[_pollFds[index].fd]); // dispatch del messaggio al dispatcher, che processa il comando e invia eventuali risposte
 		
 	}
 	return (true);
 }
+
+/* ------------------------------------ Dispatcher ----------------------------------- */
+
+// non posso scrivere solo &handleJoin o simili
+void Server::initActions()
+{
+	_actions["PASS"] = &Server::handlePass;
+}
+
+void Server::dispatchAction(const Message &msg, const Client &client)
+{
+	std::string command = msg.getCommand();
+	std::map<std::string, void (Server::*)(const Message&, const Client&)>::iterator it;
+	it = _actions.find(command);
+	if (it != _actions.end())
+		(this->*it->second)(msg, client);
+	else
+	{
+		// errore 421 ERR_UNKNOWNCOMMAND -> si potrebbe fare un error manager
+		std::cout << "Unknown command: " << command << std::endl;
+	}
+}
+
+/* ------------------------------------ Commands ----------------------------------- */
+
+void Server::handlePass(const Message &msg, const Client &client)
+{
+	(void)msg;
+	(void)client;
+	// TODO
+}
+
+
 
 /* ------------------------------------ Utils ----------------------------------- */
 
