@@ -1,12 +1,26 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Message.cpp                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/03/24 16:32:02 by cwannhed          #+#    #+#             */
+/*   Updated: 2026/03/24 16:58:06 by cwannhed         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "Message.hpp"
 
 Message::Message() : _prefix(""), _command(""), _params(), _valid(true), _error("") {}
+
 Message::Message(const Message &other)
-	: _prefix(other._prefix),
-	  _command(other._command),
-	  _params(other._params),
-	  _valid(other._valid),
-	  _error(other._error) {}
+	:_prefix(other._prefix),
+	_command(other._command),
+	_params(other._params),
+	_valid(other._valid),
+	_error(other._error) {}
+
 Message &Message::operator=(const Message &other) {
 	if (this != &other) {
 		_prefix  = other._prefix;
@@ -17,6 +31,7 @@ Message &Message::operator=(const Message &other) {
 	}
 	return *this;
 }
+
 Message::~Message() {}
 
 Message::Message(const std::string &raw) {
@@ -51,7 +66,7 @@ Message::Message(const std::string &raw) {
 	// 3. params and trailing extraction
 	while (!line.empty()) {
 		if (line[0] == ':') {
-			_params.push_back(line.substr(1)); // se incontra : (quindi un trailing msg) mette dentro i params tutto il msg
+			_trailing = line.substr(1);
 			break;
 		}
 		if (line[0] == ' ') {
@@ -68,6 +83,12 @@ Message::Message(const std::string &raw) {
 	}
 }
 
+/* -------------------------------------------------------------------------- */
+
 const std::string&	Message::getPrefix() const { return _prefix; }
+
 const std::string&	Message::getCommand() const { return _command; }
+
 const std::vector<std::string>&	Message::getParams() const { return _params; }
+
+const std::string&	Message::getTrailing() const { return _trailing; }

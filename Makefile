@@ -6,7 +6,7 @@
 #    By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/03/21 21:08:23 by cwannhed          #+#    #+#              #
-#    Updated: 2026/03/23 18:45:54 by cwannhed         ###   ########.fr        #
+#    Updated: 2026/03/24 16:46:15 by cwannhed         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,6 +18,7 @@ CXXFLAGS = -Wall -Wextra -Werror -Wshadow -std=c++98
 SRC = main.cpp \
 	Server.cpp \
 	Client.cpp \
+	Message.cpp
 
 all: $(NAME)
 
