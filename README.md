@@ -12,6 +12,24 @@ All communication is plain text terminated by \r\n.
 
 > ✨ Check [Sockets For Dummies](docs/SocketsForDummies.md) for a better understanding of how data travels across the network ✨
 
+## Run
+Compile
+```bash
+make
+```
+
+Run
+```bash
+./ircserv <port> <password>
+```
+
+> tradizionalmente si usa la porta 6667
+
+Run client
+```bash
+nc -C 127.0.0.1 6667
+```
+
 ## Connection from client
 ```bash
 PASS mypassword

@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/22 16:24:21 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/24 15:05:49 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/24 16:29:32 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,10 +27,35 @@ Client::Client(int fd, const std::string &hostname) : _fd(fd),
 	_username(""),
 	_realname(""),
 	_hostname(hostname),
-	_buffer("")
+	_buffer("") {}
 	// _passwordAccepted(false),
-	//_registered(false)
-	{}
+	// _registered(false)
+
+
+
+Client::Client(const Client& other): _fd(other._fd),
+	_nickname(other._nickname),
+	_username(other._username),
+	_realname(other._realname),
+	_hostname(other._hostname),
+	_buffer(other._buffer) {}
+//	_passwordAccepted(other._passwordAccepted),
+//	_registered(other._registered)
+
+
+Client& Client::operator=(const Client& other){
+	if (this != &other) {
+		_fd = (other._fd);
+		_nickname = (other._nickname);
+		_username = (other._username);
+		_realname = (other._realname);
+		_hostname = (other._hostname);
+		_buffer = (other._buffer);
+//		_passwordAccepted = (other._passwordAccepted);
+//		_registered = (other._registered);
+	}
+	return *this;
+}
 
 Client::~Client() {}
 

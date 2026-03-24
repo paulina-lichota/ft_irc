@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/22 16:23:34 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/24 15:05:10 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/24 16:29:53 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,14 +28,16 @@ private:
 public:
 	Client();
 	Client(int fd, const std::string &hostname);
+	Client(const Client& other);
+	Client& operator=(const Client& other);
 	~Client();
 
-	//Getters
-	std::string &getBuffer();
-	int getFd() const;
+		//Getters
+		std::string &getBuffer();
+		int getFd() const;
 
-	void appendToBuffer(const std::string &data);
-	std::string extractMessageFromBuffer(); // estrae un messaggio completo dal buffer, se presente, e lo rimuove dal buffer
+		void appendToBuffer(const std::string &data);
+		std::string extractMessageFromBuffer(); // estrae un messaggio completo dal buffer, se presente, e lo rimuove dal buffer
 };
 
 #endif

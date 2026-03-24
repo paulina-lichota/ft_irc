@@ -1,0 +1,73 @@
+#include "Message.hpp"
+
+Message::Message() : _prefix(""), _command(""), _params(), _valid(true), _error("") {}
+Message::Message(const Message &other)
+	: _prefix(other._prefix),
+	  _command(other._command),
+	  _params(other._params),
+	  _valid(other._valid),
+	  _error(other._error) {}
+Message &Message::operator=(const Message &other) {
+	if (this != &other) {
+		_prefix  = other._prefix;
+		_command = other._command;
+		_params  = other._params;
+		_valid = other._valid;
+		_error = other._error;
+	}
+	return *this;
+}
+Message::~Message() {}
+
+Message::Message(const std::string &raw) {
+	std::string line = raw;
+
+	// 1. prefix extraction
+	if (!line.empty() && line[0] == ':') {
+		size_t space = line.find(' ');
+		if (space == std::string::npos ){
+			_valid = false;
+			_error = "461";
+			return ;
+		}
+		_prefix = line.substr(1, space - 1);
+		line = line.substr(space + 1); //taglia fino all'inizio del cmd; restituisce da cmd in poi
+	}
+
+	// 2. command extraction
+	size_t space = line.find(' ');
+	if (space == std::string::npos) {
+		if (line.empty()) {
+			_valid = false;
+			_error = "421";
+			return;
+		}
+		_command = line;
+		return;
+	}
+	_command = line.substr(0, space);
+	line = line.substr(space + 1); // taglia il cmd da line e lascia tutto il resto
+
+	// 3. params and trailing extraction
+	while (!line.empty()) {
+		if (line[0] == ':') {
+			_params.push_back(line.substr(1)); // se incontra : (quindi un trailing msg) mette dentro i params tutto il msg
+			break;
+		}
+		if (line[0] == ' ') {
+			line = line.substr(1);
+			continue;
+		}
+		size_t next = line.find(' ');
+		if (next == std::string::npos) {
+			_params.push_back(line);
+			break;
+		}
+		_params.push_back(line.substr(0, next)); // mette param per param tutto dentro il vettore
+		line = line.substr(next + 1); //taglia il param inserito restituendo il resto
+	}
+}
+
+const std::string&	Message::getPrefix() const { return _prefix; }
+const std::string&	Message::getCommand() const { return _command; }
+const std::vector<std::string>&	Message::getParams() const { return _params; }
