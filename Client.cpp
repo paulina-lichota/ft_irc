@@ -6,7 +6,7 @@
 /*   By: francema <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/22 16:24:21 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/24 16:16:26 by francema         ###   ########.fr       */
+/*   Updated: 2026/03/24 16:19:47 by francema         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,28 +17,29 @@ Client::Client() : _fd(-1),
 	_username(""),
 	_realname(""),
 	_hostname(""),
-	_buffer(""),
-	_passwordAccepted(false),
-	_registered(false) {}
+	_buffer("") {}
+//	_passwordAccepted(false),
+//	_registered(false) {}
 
 Client::Client(int fd, const std::string &hostname) : _fd(fd),
 	_nickname(""),
 	_username(""),
 	_realname(""),
 	_hostname(hostname),
-	_buffer("")
+	_buffer("") {}
 	// _passwordAccepted(false),
 	// _registered(false)
-{}
+
 
 Client::Client(const Client& other): _fd(other._fd),
 	_nickname(other._nickname),
 	_username(other._username),
 	_realname(other._realname),
 	_hostname(other._hostname),
-	_buffer(other._buffer),
-	_passwordAccepted(other._passwordAccepted),
-	_registered(other._registered) {}
+	_buffer(other._buffer) {}
+//	_passwordAccepted(other._passwordAccepted),
+//	_registered(other._registered)
+
 
 Client& Client::operator=(const Client& other){
 	if (this != &other) {
@@ -48,8 +49,8 @@ Client& Client::operator=(const Client& other){
 		_realname = (other._realname);
 		_hostname = (other._hostname);
 		_buffer = (other._buffer);
-		_passwordAccepted = (other._passwordAccepted);
-		_registered = (other._registered);
+//		_passwordAccepted = (other._passwordAccepted);
+//		_registered = (other._registered);
 	}
 	return *this;
 }
