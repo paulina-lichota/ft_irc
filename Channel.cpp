@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/24 17:56:28 by plichota          #+#    #+#             */
-/*   Updated: 2026/03/24 17:56:32 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/24 20:26:56 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 Channel::Channel(std::string name)
 {
-    this->name = name;
+    this->_name = name;
 }
 
 Channel::~Channel()
@@ -24,5 +24,5 @@ Channel::~Channel()
 
 std::string Channel::getName()
 {
-    return this->name;
+    return this->_name;
 }

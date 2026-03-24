@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Message.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/24 17:18:37 by plichota          #+#    #+#             */
-/*   Updated: 2026/03/24 17:44:28 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/24 20:26:25 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
