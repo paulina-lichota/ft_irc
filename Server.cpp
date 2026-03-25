@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/25 17:05:40 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/25 17:07:00 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -233,7 +233,7 @@ void Server::handlePass(const Message &msg, Client &client) {
 
 void Server::handleNick(const Message &msg, Client &client) {
 	if (!client.getPasswordAccepted()) {
-		sendMessageToClient(client.getFd(), "451 :You have not registered");
+		sendMessageToClient(client.getFd(), ":server 451 " + client.getNickname() + " :You have not registered\r\n");
 		std::cout << "[fd:" << client.getFd() << "] NICK → 451" << std::endl;
 		return ;
 	}
@@ -307,23 +307,52 @@ void Server::handlePing(const Message &msg, Client &client)
 }
 
 
+// es. client manda "JOIN #channel"
+//     server risponde "JOIN #channel"
+// può mandare anche "JOIN #channel password" se il canale è protetto da password
+// no params -> ERR_NEEDMOREPARAMS
+// canale non esiste Channel.create(client) → Channel.handleJoin(client)
+// canale esiste -> Channel.handleJoin(client)
 void Server::handleJoin(const Message &msg, Client &client)
 {
 	// autenticato
-	if (!client.getPasswordAccepted()) {
+	if (!client.getRegistered()) {
 		sendMessageToClient(client.getFd(), "451 :You have not registered");
 		return ;
 	}
 
-	(void)msg;
-	// no params
-
+	// no channel name param
+	if (msg.getParams().size() == 0) {
+		sendMessageToClient(client.getFd(), "461 " + msg.getCommand() + " :Not enough parameters");
+		return ;
+	}
 	// canale non esiste
+	std::string channelName = msg.getParams()[0];
+	Channel *channel = getChannelByName(channelName);
+	if (channel == NULL) {
+		sendMessageToClient(client.getFd(), "403 " + msg.getCommand() + " :No such channel");
+		return ;
+	}
+	// channel password param
+	if (channel->getKey().size() > 0)
+	{
+		// prendo secondo param
+		if (msg.getParams().size() == 1)
+		{
+			sendMessageToClient(client.getFd(), "461 " + msg.getCommand() + " :Not enough parameters");
+			return ;
+		}
+		if (msg.getParams()[1] != channel->getKey()) // non sicuro ??
+		{
+			sendMessageToClient(client.getFd(), "475 " + msg.getCommand() + " :Channel key is incorrect");
+			return ;
+		}
 
-	// canale esiste -> Channel.handleJoin(client)
+	}
 
-	// canale non esiste -> Channel.create(client)
+	// if canale non esiste -> Channel.create(client)
 
+	// a quesot punto canale esiste per forza -> Channel.handleJoin(client)
 }
 
 /* ------------------------------------ Channel ----------------------------------- */
@@ -375,6 +404,7 @@ void Server::sendWelcomeMessage(const Client &client) {
 	sendMessageToClient(client.getFd(), ":" + host + " 002 " + nick + " :Your host is " + host + ", running version 1.0");
 	sendMessageToClient(client.getFd(), ":" + host + " 003 " + nick + " :This server was created " + std::string(__DATE__));
 	sendMessageToClient(client.getFd(), ":" + host + " 004 " + nick + " " + host + " 1.0 o o");
+	std::cout << "[fd:" << client.getFd() << "] Sent welcome messages (001-004)" << std::endl;
 }
 
 int Server::getFdByNickname(const std::string &nickname)
