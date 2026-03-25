@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/25 11:50:46 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/25 11:59:53 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ class Server {
 		void addPollFd(int fd);
 		void sendMessageToClient(int fd, const std::string &message);
 		size_t pollfdIndexByFd(int fd);
+		
 		// Static methods:
 		static bool isValidPort(const std::string &port);
 		static bool isValidPassword(const std::string &password);
@@ -54,7 +55,7 @@ class Server {
 		// Actions
 		// TODO
 		void handlePass(const Message &msg, Client &client);
-		void handlePing(const Message &msg, const Client &client);
+		void handlePing(const Message &msg, Client &client);
 
 };
 

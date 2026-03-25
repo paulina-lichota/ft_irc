@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/25 11:50:33 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/25 12:05:31 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -177,12 +177,13 @@ bool Server::handleClientMessage(size_t index) {
 
 /* ------------------------------------ Dispatcher ----------------------------------- */
 
-// non posso scrivere solo &handleJoin o simili
+// non posso scrivere solo &handleJoin
 void Server::initActions()
 {
 	_actions["PASS"] = &Server::handlePass;
+	_actions["PING"] = &Server::handlePing;
+	// AGGIORNARE MAN MANO
 }
-
 void Server::dispatchAction(const Message &msg, Client &client)
 {
 	std::string command = msg.getCommand();
@@ -216,13 +217,10 @@ void Server::handlePass(const Message &msg, Client &client) {
 	client.setPasswordAccepted(true);
 }
 
-void Server::handlePing(const Message &msg, const Client &client)
+void Server::handlePing(const Message &msg, Client &client)
 {
-	std::string pong = "PONG\r\n";
 	(void)msg;
-	(void)client;
-	// send "Pong" to client
-	// client.send(pong);
+	sendMessageToClient(client.getFd(), "PONG");
 }
 
 /* ------------------------------------ Utils ----------------------------------- */
