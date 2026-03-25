@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/25 19:30:14 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/25 19:32:34 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -193,6 +193,7 @@ void Server::initActions()
 	// AGGIORNARE MAN MANO
 }
 
+
 // 421 ERR_UNKNOWNCOMMAND "<command> :Unknown command"
 void Server::dispatchAction(const Message &msg, Client &client)
 {
@@ -345,45 +346,65 @@ void Server::handleJoin(const Message &msg, Client &client)
 		sendMessageToClient(client.getFd(), "451 :You have not registered");
 		return ;
 	}
-
-	// no channel name param
+	// no channel name in message params
 	if (msg.getParams().size() == 0) {
 		sendMessageToClient(client.getFd(), "461 " + msg.getCommand() + " :Not enough parameters");
 		return ;
 	}
-	// canale non esiste
+
+	// canale non esiste -> crea e aggiunge come operator e member (gestito dopo)
 	std::string channelName = msg.getParams()[0];
+
 	Channel *channel = getChannelByName(channelName);
 	if (channel == NULL) {
-		sendMessageToClient(client.getFd(), "403 " + msg.getCommand() + " :No such channel");
-		return ;
+		createChannel(channelName);
+		channel = getChannelByName(channelName);
 	}
-	// channel password param
+
+	// se channel protetto da key
 	if (channel->getKey().size() > 0)
 	{
 		// prendo secondo param
-		if (msg.getParams().size() == 1)
-		{
+		if (msg.getParams().size() == 1) {
 			sendMessageToClient(client.getFd(), "461 " + msg.getCommand() + " :Not enough parameters");
 			return ;
 		}
-		if (msg.getParams()[1] != channel->getKey()) // non sicuro ??
-		{
+		if (msg.getParams()[1] != channel->getKey()) {
 			sendMessageToClient(client.getFd(), "475 " + msg.getCommand() + " :Channel key is incorrect");
 			return ;
 		}
-
 	}
 
-	Channel *channel = getChannelByName(channelName);
-	if (channel == NULL)
-		createChannel(channelName);
+	// già membro del canale
+	if (channel->isMember(client.getNickname()))
+		return;
 
-		/*JOIN CHANNEL*/
-		// check if password protected and if password param is correct
-		// check if invite only and if client is invited
-		// check if channel is full (users limit)
-		// accept client and send JOIN message to channel members (everyone, also sender)
+	// invite only
+	if (channel->getInviteOnly() && !channel->isInvited(client.getNickname())) {
+			sendMessageToClient(client.getFd(), "473 " + client.getNickname() + " "
+				+ channelName + " :Cannot join channel (+i)");
+			return;
+	}
+
+	// limite utenti
+	if (channel->getUsersLimit() > 0 && channel->getMemberCount() >= channel->getUsersLimit()) {
+			sendMessageToClient(client.getFd(), "471 " + client.getNickname() + " " + channelName + " :Cannot join channel (+l)");
+			return;
+	}
+
+
+	// aggiungo come membro
+	channel->addMember(client.getNickname());
+	// setto operatore
+	if (channel->getMemberCount() == 1)
+			channel->addOperator(client.getNickname());
+	// aggiorna invited se è invitato
+	if (channel->isInvited(client.getNickname()))
+			channel->removeInvited(client.getNickname());
+
+	// broadcast message di JOIN a tutti i membri del canale (compreso il nuovo membro)
+	const std::string message = ":" + client.getNickname() + " JOIN " + channelName; // da formattare meglio i messaggi
+	broadcastMessageToChannel(message, *channel, "");
 }
 
 /* ------------------------------------ Operator actions ----------------------------------- */
@@ -459,6 +480,20 @@ void Server::createChannel(const std::string &name)
 	_channels.push_back(Channel(name));
 }
 
+void Server::broadcastMessageToChannel(const std::string &message, const Channel &channel, const std::string &toExclude)
+{
+	// get Members restituisce nicknames
+	// cerco gli fd per ogni nickname
+	const std::set<std::string> &members = channel.getMembers();
+	for (std::set<std::string>::const_iterator it = members.begin(); it != members.end(); ++it) {
+			if (*it != toExclude) {
+					int fd = getFdByNickname(*it);
+					if (fd != -1)
+							sendMessageToClient(fd, message);
+			}
+	}
+}
+
 /* ------------------------------------ Utils ----------------------------------- */
 
 void Server::addPollFd(int fd) {
@@ -495,11 +530,11 @@ void Server::sendWelcomeMessage(const Client &client) {
 
 int Server::getFdByNickname(const std::string &nickname)
 {
-    for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
-        if (it->second.getNickname() == nickname)
-            return it->first;
-    }
-    return -1;
+	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
+		if (it->second.getNickname() == nickname)
+			return it->first;
+	}
+	return -1;
 }
 
 /* ------------------------------------ Static methods ----------------------------------- */
@@ -561,3 +596,71 @@ bool	Server::isValidPassword(const std::string &password) {
 // 		channels = channels.substr(pos + 1);
 // 	}
 // }
+
+bool	Server::isNick(const std::string& nick) {
+	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
+		if (it->second.getNickname() == nick) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool	Server::isChannel(const std::string& channel) {
+	for (std::vector<Channel>::const_iterator it = _channels.begin();
+		 it != _channels.end(); ++it)
+	{
+		if (it->getName() == channel)
+			return true;
+	}
+	return false;
+}
+
+void	Server::privmsg(const Message& msg, const Client& client)
+{
+	if (msg.getParams().empty()) {
+		sendMessageToClient(client.getFd(), ":" + _name + " 461 " + client.getNickname() + " PRIVMSG :Not enough parameters\r\n");
+		return ;
+	}
+	if (msg.getTrailing().empty()) {
+		sendMessageToClient(client.getFd(), ":" + _name + " 412 " + client.getNickname() + " :No text to send\r\n");
+		return ;
+	}
+	std::string target = msg.getParams()[0];
+	// ===================== CHANNEL =====================
+	if (!target.empty() && target[0] == '#')
+	{
+		if (!isChannel(target)) {
+			sendMessageToClient(client.getFd(),
+				":" + _name + " 403 " + client.getNickname() + " " + target + " :No such channel\r\n");
+			return;
+		}
+		std::map<int, Client>::iterator it = _clients.find(client.getFd());
+		if (it == _clients.end())
+			return;
+		std::string sender = it->second.getNickname();
+		Channel *ch = getChannelByName(target);
+		if (!ch->isMember(sender)){
+			sendMessageToClient(client.getFd(),
+				":" + _name + " 404 " + client.getNickname() + " " + target + " :Cannot send to channel\r\n");
+			return ;
+		}
+	}
+	// ===================== NICK =====================
+	else {
+		if (!isNick(target)) {
+			sendMessageToClient(client.getFd(),
+				":" + _name + " 401 " + client.getNickname() + " " + target + " :No such nick/channel\r\n");
+			return;
+		}
+		std::map<int, Client>::iterator it = _clients.find(client.getFd());
+		if (it == _clients.end())
+			return;
+		std::string sender = it->second.getNickname();
+		int targetFd = getFdByNickname(target);
+		if (targetFd == -1)
+			return;
+		std::string message = ":" + sender + " PRIVMSG " + target + " :" + msg.getTrailing() + "\r\n";
+		sendMessageToClient(targetFd, message);
+	}
+}

@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/25 18:55:28 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/25 19:32:51 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,11 @@ class Server {
 
 		void run();
 
+		//checks di esistenza
+		bool isNick(const std::string& nick);
+		bool isChannel(const std::string& channel);
+		bool isNickInChannel(const std::string& nick);
+
 		// Handlers:
 		void handleNewConnection();
 		void handleClientDisconnection(size_t index);
@@ -55,8 +60,11 @@ class Server {
 		void printChannels();
 		Channel* getChannelByName(const std::string &name); // ritorna NULL se non esiste
 		void createChannel(const std::string &name);
-		void broadcastMessageToChannel(const std::string &message, const Channel &channel, const Client &sender); // invia message a tutti i client del canale tranne sender
 
+		// invia message a tutti i client del canale tranne toExclude. sender già dentro la stringa
+		void broadcastMessageToChannel(const std::string &message, const Channel &channel, const std::string &toExclude);
+
+		void	privmsg(const Message& msg, const Client& client);
 		int	join(const Message &msg, const Client &client);	// aggiunge un client al canale, se il canale è protetto da password, client deve fornire la password corretta
 
 		/*
