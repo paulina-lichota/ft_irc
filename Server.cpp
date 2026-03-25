@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/25 12:05:31 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/25 12:20:15 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -217,10 +217,20 @@ void Server::handlePass(const Message &msg, Client &client) {
 	client.setPasswordAccepted(true);
 }
 
+// es. client manda "PONG :123"
+//     server risponde "PONG :123"
+// no params -> ERR_NOORIGIN
+// max 2 params -> se più di 2, ignora quelli extra
 void Server::handlePing(const Message &msg, Client &client)
 {
-	(void)msg;
-	sendMessageToClient(client.getFd(), "PONG");
+	if (msg.getParams().empty()) {
+		sendMessageToClient(client.getFd(), "409 :No origin specified"); // ERR_NOORIGIN
+		return;
+	}
+	std::string message = "PONG " + msg.getParams()[0];
+	if (msg.getParams().size() > 1)
+		message += " " + msg.getParams()[1];
+	sendMessageToClient(client.getFd(), message);
 }
 
 /* ------------------------------------ Utils ----------------------------------- */
