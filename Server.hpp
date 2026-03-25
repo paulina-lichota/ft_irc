@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/25 14:00:07 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/25 16:10:55 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ class Server {
 		std::vector<struct pollfd>	_pollFds; // array di fd dei clients da monitorare
 		std::map<int, Client>		_clients;	 // associazione fd -> oggetto client
 		static const int			POLL_TIMEOUT = -1; // -1 per aspettare eventi all'infinito
-		std::vector<Channel>		_channels; // lista di canali esistenti, ogni canale ha una lista di client connessi
+		std::vector<Channel>		_channels; // MAP CON NAME? PER MIGLIORARE COMPLESSITÀ RICERCA  lista di canali esistenti, ogni canale ha una lista di client connessi
 		std::map<std::string, void (Server::*)(const Message&, Client&)> _actions; // mappa comando + pointer a funzione
 	public:
 		Server(const int port, const std::string &password);
@@ -44,6 +44,7 @@ class Server {
 		void sendMessageToClient(int fd, const std::string &message);
 		size_t pollfdIndexByFd(int fd);
 		void sendWelcomeMessage(const Client &client);
+			int getFdByNickname(const std::string &nickname);
 
 		// Static methods:
 		static bool isValidPort(const std::string &port);
@@ -52,13 +53,14 @@ class Server {
 		// Channels
 		void printChannels();
 		Channel* getChannelByName(const std::string &name); // ritorna NULL se non esiste
+
 		void join(Client client);			// aggiunge un client al canale, se il canale è protetto da password, client deve fornire la password corretta
-		void kick(Client client);		  // kick un client dal canale
-		void invite(Client client);		  // invita un client al canale
+		// void kick(Client client);		  // kick un client dal canale
+		// void invite(Client client);		  // invita un client al canale
 		/*
 			All the messages sent from one client to a channel have to be forwarded to every other client that joined the channel.
 		*/
-		void broadcastMessageToChannel(const std::string &message, Client sender); // invia message a tutti i client del canale tranne sender
+		void broadcastMessageToChannel(const std::string &message, const Channel &channel, const Client &sender); // invia message a tutti i client del canale tranne sender
 
 		// Dispatcher
 		void initActions();
