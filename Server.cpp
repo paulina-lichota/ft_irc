@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/25 22:00:29 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/25 22:04:34 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -553,12 +553,11 @@ size_t Server::pollfdIndexByFd(int fd) {
 
 void Server::sendWelcomeMessage(const Client &client) {
 	std::string nick = client.getNickname();
-	std::string host = "ircserv";
 
-	sendMessageToClient(client.getFd(), ":" + host + " 001 " + nick + " :Welcome to the IRC network, " + nick + "!");
-	sendMessageToClient(client.getFd(), ":" + host + " 002 " + nick + " :Your host is " + host + ", running version 1.0");
-	sendMessageToClient(client.getFd(), ":" + host + " 003 " + nick + " :This server was created " + std::string(__DATE__));
-	sendMessageToClient(client.getFd(), ":" + host + " 004 " + nick + " " + host + " 1.0 o o");
+	sendMessageToClient(client.getFd(), ":" + _name + " 001 " + nick + " :Welcome to the IRC network, " + nick + "!");
+	sendMessageToClient(client.getFd(), ":" + _name + " 002 " + nick + " :Your host is " + _name + ", running version 1.0");
+	sendMessageToClient(client.getFd(), ":" + _name + " 003 " + nick + " :This server was created " + std::string(__DATE__));
+	sendMessageToClient(client.getFd(), ":" + _name + " 004 " + nick + " " + _name + " 1.0 o o");
 	std::cout << "[fd:" << client.getFd() << "] Sent welcome messages (001-004)" << std::endl;
 }
 
