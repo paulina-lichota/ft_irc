@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/25 16:03:39 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/25 16:06:18 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -418,4 +418,22 @@ bool	Server::isValidPassword(const std::string &password) {
 	if (password.size() > 510)
 		return (false);
 	return (true);
+}
+
+int	Server::join(const Message &msg, const Client &client) {
+	size_t		i = 0;
+	if (msg.getParams().size() > 1)
+		Server::sendMessageToClient(client.getFd(), "461 " + client.getNickname() + " " + msg.getCommand() + " :Not enough parameters"); //ERR_BADCHANMASK se non vogliamo gestire gli spazzi
+	std::string channels = msg.getParams()[0];
+	while (!channels.empty()) {
+		if (channels[0] != '#') {
+			Server::sendMessageToClient(client.getFd(), "403 " + client.getNickname() + " " + msg.getCommand() + " :No such channel"); //ERR_NOSUCHCHANNEL deve iniziare con # channel
+		}
+		size_t pos = channels.find(',');
+		std::string channel = channels.substr(0, pos); //estraggo il channel
+		/*if (!channe.exist(channel))
+			Server::sendMessageToClient(client.getFd(), "403 " + client.getNickname() + " " + msg.getCommand() + " :No such channel");
+		*/
+		channels = channels.substr(pos + 1);
+	}
 }
