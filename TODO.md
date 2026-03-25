@@ -28,8 +28,7 @@
 - [X] NICK + check nickname uniqueness
 - [X] USER
 - [X] Welcome messages (001 002 003 004)
-- [ ] PING / PONG
-- [ ] QUIT
+
 
 ## Fase 3 — Canali
 - [ ] Classe Channel — attributi base
@@ -58,6 +57,8 @@
 - [ ] Test tutti i comandi operatore
 - [ ] Test errori numerici
 
+- [ ] PING / PONG
+- [ ] QUIT
 ## TO  FIX:
 
 Unknown command: CAP

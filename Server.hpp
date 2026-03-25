@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/25 18:20:55 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/25 18:55:28 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,10 +58,9 @@ class Server {
 		void broadcastMessageToChannel(const std::string &message, const Channel &channel, const Client &sender); // invia message a tutti i client del canale tranne sender
 
 		int	join(const Message &msg, const Client &client);	// aggiunge un client al canale, se il canale è protetto da password, client deve fornire la password corretta
-		// void kick(Client client);		  // kick un client dal canale
-		// void invite(Client client);		  // invita un client al canale
+
 		/*
-			All the messages sent from one client to a channel have to be forwarded to every other client that joined the channel.
+		All the messages sent from one client to a channel have to be forwarded to every other client that joined the channel.
 		*/
 
 		// Dispatcher
@@ -75,6 +74,10 @@ class Server {
 		void handleUser(const Message &msg, Client &client);
 		void handlePing(const Message &msg, Client &client);
 		void handleJoin(const Message &msg, Client &client);
+		// Operator actions:
+		void handleKick(const Message &msg, Client &client);
+		// void handleInvite(const Message &msg, Client &client); // invita un client al can
+		// void invite(Client client);		  // invita un client al canale
 };
 
 #endif
