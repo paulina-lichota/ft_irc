@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/25 17:07:00 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/25 17:12:46 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,7 +111,8 @@ void	Server::run(){
 **   inet_ntoa → ricava l'hostname (stringa IP) dall'indirizzo restituito da accept()
 **
 ** Il nuovo client viene aggiunto sia a _fds (per poll()) che a _clients (fd → Client).
-*/void Server::handleNewConnection() {
+*/
+void Server::handleNewConnection() {
 	struct sockaddr_in clientAddr;
 	socklen_t clientAddrLen = sizeof(clientAddr);
 	int clientFd = accept(_serverFd, (struct sockaddr *)&clientAddr, &clientAddrLen);
