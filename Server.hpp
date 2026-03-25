@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/25 16:12:46 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/25 17:04:45 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 
 class Server {
 	private:
+		std::string					_name; // nome del server, usato nei prefix dei messaggi (es. :ircserv 001 nickname :Welcome to the IRC server)
 		int							_port;
 		std::string					_password; // PASS mypassword -> mypassword == _passoword, altrimenti connessione rifiutata
 		int							_serverFd; // socket del server (ascolta nuovi client)

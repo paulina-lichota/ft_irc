@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:17:58 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/25 16:01:28 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/25 17:04:20 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,5 +37,5 @@
 # define RESET   	"\033[0m"
 
 # define IRC_MSG_MAX_LEN	512
-
+# define SERVER_NAME		"ircserv"
 #endif

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/25 16:14:04 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/25 17:05:40 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@
 **
 ** In caso di errore, chiude il fd aperto e lancia un'eccezione.
 */
-Server::Server(const int port, const std::string &password) : _port(port), _password(password), _channels()
+Server::Server(const int port, const std::string &password) : _name(SERVER_NAME), _port(port), _password(password), _channels()
 {
 	initActions();
 	_serverFd = socket(AF_INET, SOCK_STREAM, 0);
@@ -178,7 +178,6 @@ bool Server::handleClientMessage(size_t index) {
 
 /* ------------------------------------ Dispatcher ----------------------------------- */
 
-// non posso scrivere solo &handleJoin
 void Server::initActions()
 {
 	_actions["PASS"] = &Server::handlePass;
@@ -387,15 +386,6 @@ int Server::getFdByNickname(const std::string &nickname)
     return -1;
 }
 
-int Server::getFdByNickname(const std::string &nickname)
-{
-    for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
-        if (it->second.getNickname() == nickname)
-            return it->first;
-    }
-    return -1;
-}
-
 /* ------------------------------------ Static methods ----------------------------------- */
 
 /*
@@ -437,21 +427,21 @@ bool	Server::isValidPassword(const std::string &password) {
 	return (true);
 }
 
-int	Server::join(const Message &msg, const Client &client)
-{
-	size_t		i = 0;
-	if (msg.getParams().size() > 1)
-		Server::sendMessageToClient(client.getFd(), "461 " + client.getNickname() + " " + msg.getCommand() + " :Not enough parameters"); //ERR_BADCHANMASK se non vogliamo gestire gli spazzi
-	std::string channels = msg.getParams()[0];
-	while (!channels.empty()) {
-		if (channels[0] != '#') {
-			Server::sendMessageToClient(client.getFd(), "403 " + client.getNickname() + " " + msg.getCommand() + " :No such channel"); //ERR_NOSUCHCHANNEL deve iniziare con # channel
-		}
-		size_t pos = channels.find(',');
-		std::string channel = channels.substr(0, pos); //estraggo il channel
-		/*if (!channe.exist(channel))
-			Server::sendMessageToClient(client.getFd(), "403 " + client.getNickname() + " " + msg.getCommand() + " :No such channel");
-		*/
-		channels = channels.substr(pos + 1);
-	}
-}
+// int	Server::join(const Message &msg, const Client &client)
+// {
+// 	size_t		i = 0;
+// 	if (msg.getParams().size() > 1)
+// 		Server::sendMessageToClient(client.getFd(), "461 " + client.getNickname() + " " + msg.getCommand() + " :Not enough parameters"); //ERR_BADCHANMASK se non vogliamo gestire gli spazzi
+// 	std::string channels = msg.getParams()[0];
+// 	while (!channels.empty()) {
+// 		if (channels[0] != '#') {
+// 			Server::sendMessageToClient(client.getFd(), "403 " + client.getNickname() + " " + msg.getCommand() + " :No such channel"); //ERR_NOSUCHCHANNEL deve iniziare con # channel
+// 		}
+// 		size_t pos = channels.find(',');
+// 		std::string channel = channels.substr(0, pos); //estraggo il channel
+// 		/*if (!channe.exist(channel))
+// 			Server::sendMessageToClient(client.getFd(), "403 " + client.getNickname() + " " + msg.getCommand() + " :No such channel");
+// 		*/
+// 		channels = channels.substr(pos + 1);
+// 	}
+// }
