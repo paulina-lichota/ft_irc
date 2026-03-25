@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/25 22:15:51 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/25 22:24:47 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,8 @@ class Server {
 		void run();
 
 		//checks di esistenza
-		bool isNick(const std::string& nick);
-		bool isChannel(const std::string& channel);
+		// bool isNick(const std::string& nick);
+		// bool isChannel(const std::string& channel);
 		bool isNickInChannel(const std::string& nick);
 
 		// Handlers:

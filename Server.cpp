@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/25 22:21:28 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/25 22:24:42 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -129,9 +129,26 @@ void Server::handleNewConnection() {
 }
 
 void Server::handleClientDisconnection(size_t index) {
-	std::cout << "[fd:" << _pollFds[index].fd << "] Client disconnected" << std::endl;
-	close(_pollFds[index].fd);
-	_clients.erase(_pollFds[index].fd);
+	int fd = _pollFds[index].fd;
+	std::string nick = _clients[fd].getNickname();
+
+	// rimuovi il client da tutti i canali
+	for (size_t i = 0; i < _channels.size(); i++) {
+		_channels[i].removeMember(nick);
+		_channels[i].removeOperator(nick);
+		_channels[i].removeInvited(nick);
+	}
+	// elimina i canali rimasti vuoti
+	for (size_t i = 0; i < _channels.size();) {
+		if (_channels[i].getMemberCount() == 0)
+			_channels.erase(_channels.begin() + i);
+		else
+			i++;
+	}
+
+	std::cout << "[fd:" << fd << "] Client disconnected" << std::endl;
+	close(fd);
+	_clients.erase(fd);
 	_pollFds.erase(_pollFds.begin() + index);
 }
 
@@ -248,6 +265,11 @@ void Server::handleNick(const Message &msg, Client &client) {
 		sendMessageToClient(client.getFd(), "461 " + msg.getCommand() + " :Not enough parameters");
 		std::cout << "[fd:" << client.getFd() << "] NICK → 461" << std::endl;
 		return ;
+	}
+	if (!isValidNickname(msg.getParams()[0])) {
+		sendMessageToClient(client.getFd(), "432 " + msg.getParams()[0] + " :Erroneous nickname");
+		std::cout << "[fd:" << client.getFd() << "] NICK → 432" << std::endl;
+		return;
 	}
 	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
 		if (it->second.getNickname() == msg.getParams()[0]) {
@@ -490,7 +512,11 @@ void Server::handleKick(const Message &msg, Client &client) {
 	}
 	// remove target client from channel and send KICK message to channel members (everyone, also sender)
 	channel->removeMember(targetNickname);
+	channel->removeOperator(targetNickname);
+	channel->removeInvited(targetNickname);
 	std::string kickMessage = ":" + client.getNickname() + " KICK " + channelName + " " + targetNickname;
+	if (!msg.getTrailing().empty())
+		kickMessage += " :" + msg.getTrailing();
 	broadcastMessageToChannel(kickMessage, *channel, "");
 }
 
@@ -553,7 +579,24 @@ void Server::addPollFd(int fd) {
 
 void Server::sendMessageToClient(int fd, const std::string &message) {
 	std::string msgWithCRLF = message + "\r\n";
-	send(fd, msgWithCRLF.c_str(), msgWithCRLF.size(), 0);
+	const char *data = msgWithCRLF.c_str();
+	size_t total = msgWithCRLF.size();
+	size_t sent = 0;
+	while (sent < total) {
+		ssize_t n = send(fd, data + sent, total - sent, 0);
+		if (n < 0) {
+			if (errno == EINTR)
+			continue;
+			std::cerr << RED << "[fd:" << fd << "] send() error" << RESET << std::endl;
+			size_t idx = pollfdIndexByFd(fd);
+			if (idx < _pollFds.size())
+				handleClientDisconnection(idx);
+			return ;
+		}
+			if (n == 0) // connessione chiusa dall'altro lato
+				break;
+			sent += n;
+		}
 }
 
 size_t Server::pollfdIndexByFd(int fd) {
@@ -566,12 +609,11 @@ size_t Server::pollfdIndexByFd(int fd) {
 
 void Server::sendWelcomeMessage(const Client &client) {
 	std::string nick = client.getNickname();
-	std::string host = "ircserv";
 
-	sendMessageToClient(client.getFd(), ":" + host + " 001 " + nick + " :Welcome to the IRC network, " + nick + "!");
-	sendMessageToClient(client.getFd(), ":" + host + " 002 " + nick + " :Your host is " + host + ", running version 1.0");
-	sendMessageToClient(client.getFd(), ":" + host + " 003 " + nick + " :This server was created " + std::string(__DATE__));
-	sendMessageToClient(client.getFd(), ":" + host + " 004 " + nick + " " + host + " 1.0 o o");
+	sendMessageToClient(client.getFd(), ":" + _name + " 001 " + nick + " :Welcome to the IRC network, " + nick + "!");
+	sendMessageToClient(client.getFd(), ":" + _name + " 002 " + nick + " :Your host is " + _name + ", running version 1.0");
+	sendMessageToClient(client.getFd(), ":" + _name + " 003 " + nick + " :This server was created " + std::string(__DATE__));
+	sendMessageToClient(client.getFd(), ":" + _name + " 004 " + nick + " " + _name + " 1.0 o o");
 	std::cout << "[fd:" << client.getFd() << "] Sent welcome messages (001-004)" << std::endl;
 }
 
@@ -637,46 +679,30 @@ bool Server::isValidNickname(const std::string &nickname) {
     if (std::isdigit(nickname[0]) || nickname[0] == '#' || nickname[0] == '&' || nickname[0] == ':')
         return false;
     for (size_t i = 0; i < nickname.length(); i++) {
-        if (isspace(nickname[i]) || nickname[i] == ',' || nickname[i] == '*' 
+        if (isspace(nickname[i]) || nickname[i] == ',' || nickname[i] == '*'
             || nickname[i] == '?' || nickname[i] == '\r' || nickname[i] == '\n')
             return false;
     }
     return true;
 }
 
-// la lunghezza in realta' è 200 caratteri incluso prefisso
-// Non può essere solo # o & senza niente dopo
-// Non può includere '\x07' - ASCII BEL (bell sound)
-bool Server::isValidChannelName(const std::string &channelName)
-{
-	if (channelName.length() > 100 || channelName.length() < 2)
-		return false;
-	if (channelName[0] != '#' && channelName[0] != '&')
-		return false;
-	for (size_t i = 1; i < channelName.length(); i++) {
-		if (isspace(channelName[i]) || channelName[i] == ',' || channelName[i] == ':'
-			|| channelName[i] == '\r' || channelName[i] == '\n' || channelName[i] == '\x07')
-			return false;
-	}
-	return true;
-}
+// bool	Server::isNick(const std::string& nick) {
+// 	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
+// 		if (it->second.getNickname() == nick) {
+// 			return true;
+// 		}
+// 	}
+// 	return false;
+// }
 
-bool	Server::isNick(const std::string& nick) {
-	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
-		if (it->second.getNickname() == nick) {
-			return true;
-		}
-	}
-	return false;
-}
+// bool	Server::isChannel(const std::string& channel) {
+// 	for (std::vector<Channel>::const_iterator it = _channels.begin();
+// 		 it != _channels.end(); ++it)
+// 	{
+// 		if (it->getName() == channel)
+// 			return true;
+// 	}
+// 	return false;
+// }
 
-bool	Server::isChannel(const std::string& channel) {
-	for (std::vector<Channel>::const_iterator it = _channels.begin();
-		 it != _channels.end(); ++it)
-	{
-		if (it->getName() == channel)
-			return true;
-	}
-	return false;
-}
 
