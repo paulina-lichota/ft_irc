@@ -30,13 +30,12 @@
 - [X] Welcome messages (001 002 003 004)
 - [X] PING / PONG
 - [ ] QUIT
+- [ ] PRIVMSG (privato)  // fra
 
 ## Fase 3 — Canali
 - [X] Classe Channel — attributi base
 - [x] JOIN
-- [ ] PART // facoltativo
-- [ ] PRIVMSG (canale)
-- [ ] PRIVMSG (privato)
+- [ ] PRIVMSG (canale) // fra ?
 - [ ] TOPIC (lettura)
 
 ## Fase 4 — Operatori
@@ -58,16 +57,10 @@
 - [ ] Test tutti i comandi operatore
 - [ ] Test errori numerici
 
-
-
-//facoltativi:
-
-- [ ] PING / PONG
-- [ ] QUIT
 ## TO  FIX:
-
 - [] NICK: se nick già registrato e cambio nick → notifica il client e tutti i canali in cui si trova
 - [] NICK: aggiungere isValidNickname (esiste già)
+- [] PRIVMSG nel canale non va
 
 
 Unknown command: CAP
