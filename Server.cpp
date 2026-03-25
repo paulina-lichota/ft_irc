@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/25 21:55:14 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/25 22:00:29 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -129,9 +129,26 @@ void Server::handleNewConnection() {
 }
 
 void Server::handleClientDisconnection(size_t index) {
-	std::cout << "[fd:" << _pollFds[index].fd << "] Client disconnected" << std::endl;
-	close(_pollFds[index].fd);
-	_clients.erase(_pollFds[index].fd);
+	int fd = _pollFds[index].fd;
+	std::string nick = _clients[fd].getNickname();
+
+	// rimuovi il client da tutti i canali
+	for (size_t i = 0; i < _channels.size(); i++) {
+		_channels[i].removeMember(nick);
+		_channels[i].removeOperator(nick);
+		_channels[i].removeInvited(nick);
+	}
+	// elimina i canali rimasti vuoti
+	for (size_t i = 0; i < _channels.size();) {
+		if (_channels[i].getMemberCount() == 0)
+			_channels.erase(_channels.begin() + i);
+		else
+			i++;
+	}
+
+	std::cout << "[fd:" << fd << "] Client disconnected" << std::endl;
+	close(fd);
+	_clients.erase(fd);
 	_pollFds.erase(_pollFds.begin() + index);
 }
 
