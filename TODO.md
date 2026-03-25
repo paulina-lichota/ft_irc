@@ -30,12 +30,12 @@
 - [X] Welcome messages (001 002 003 004)
 - [X] PING / PONG
 - [ ] QUIT
-- [ ] PRIVMSG (privato)  // fra
+- [X] PRIVMSG (privato)
 
 ## Fase 3 — Canali
 - [X] Classe Channel — attributi base
-- [x] JOIN
-- [ ] PRIVMSG (canale) // fra ?
+- [X] JOIN
+- [X] PRIVMSG (canale)
 - [ ] TOPIC (lettura)
 
 ## Fase 4 — Operatori
@@ -62,6 +62,14 @@
 - [] NICK: aggiungere isValidNickname (esiste già)
 - [] PRIVMSG nel canale non va
 
+PRIVMSG #42: ciao
+:ircserv 412 Pau :No text to send
+
+## TO  IMPROVE:
+- [] logging messaggi sul client -> mandare prefix server
+- [] logging messaggi sul server -> mandare  info client + messaggi extra (non solo fd)
+
+<!-- ----------------------------------------------------------------------- -->
 
 Unknown command: CAP
 Received from client fd 4: QUIT :Leaving
