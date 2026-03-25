@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/25 21:56:08 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/25 22:21:28 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -357,6 +357,10 @@ void Server::handleJoin(const Message &msg, Client &client)
 
 	Channel *channel = getChannelByName(channelName);
 	if (channel == NULL) {
+		if (!isValidChannelName(channelName)) {
+			sendMessageToClient(client.getFd(), "403 " + msg.getCommand() + " :No such channel"); // nome non valido
+			return ;
+		}
 		createChannel(channelName);
 		channel = getChannelByName(channelName);
 	}
@@ -439,19 +443,12 @@ void Server::handlePrivmsg(const Message &msg, Client &client)
 	}
 	// ===================== NICK =====================
 	else {
-		if (!isNick(target)) {
-			sendMessageToClient(client.getFd(),
-				":" + _name + " 401 " + client.getNickname() + " " + target + " :No such nick/channel");
+		int targetFd = getFdByNickname(target);
+		if (targetFd == -1) {
+			sendMessageToClient(client.getFd(), ":" + _name + " 401 " + client.getNickname() + " " + target + " :No such nick/channel");
 			return;
 		}
-		std::map<int, Client>::iterator it = _clients.find(client.getFd());
-		if (it == _clients.end())
-			return;
-		std::string sender = it->second.getNickname();
-		int targetFd = getFdByNickname(target);
-		if (targetFd == -1)
-			return;
-		std::string message = ":" + sender + " PRIVMSG " + target + " :" + msg.getTrailing();
+		std::string message = ":" + client.getNickname() + " PRIVMSG " + target + " :" + msg.getTrailing();
 		sendMessageToClient(targetFd, message);
 	}
 }
@@ -645,6 +642,23 @@ bool Server::isValidNickname(const std::string &nickname) {
             return false;
     }
     return true;
+}
+
+// la lunghezza in realta' è 200 caratteri incluso prefisso
+// Non può essere solo # o & senza niente dopo
+// Non può includere '\x07' - ASCII BEL (bell sound)
+bool Server::isValidChannelName(const std::string &channelName)
+{
+	if (channelName.length() > 100 || channelName.length() < 2)
+		return false;
+	if (channelName[0] != '#' && channelName[0] != '&')
+		return false;
+	for (size_t i = 1; i < channelName.length(); i++) {
+		if (isspace(channelName[i]) || channelName[i] == ',' || channelName[i] == ':'
+			|| channelName[i] == '\r' || channelName[i] == '\n' || channelName[i] == '\x07')
+			return false;
+	}
+	return true;
 }
 
 bool	Server::isNick(const std::string& nick) {

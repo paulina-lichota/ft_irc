@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/25 20:53:19 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/25 22:15:51 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,6 +56,7 @@ class Server {
 		static bool isValidPort(const std::string &port);
 		static bool isValidPassword(const std::string &password);
 		static bool isValidNickname(const std::string &nickname);
+		static bool isValidChannelName(const std::string &channelName);
 
 		// Channels
 		void printChannels();
@@ -82,6 +83,7 @@ class Server {
 		void handlePing(const Message &msg, Client &client);
 		void handleJoin(const Message &msg, Client &client);
 		void handlePrivmsg(const Message &msg, Client &client);
+		void handleTopic(const Message &msg, Client &client);
 		// Operator actions:
 		void handleKick(const Message &msg, Client &client);
 		// void handleInvite(const Message &msg, Client &client); // invita un client al can
