@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/25 22:06:12 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/25 22:09:02 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -465,7 +465,11 @@ void Server::handleKick(const Message &msg, Client &client) {
 	}
 	// remove target client from channel and send KICK message to channel members (everyone, also sender)
 	channel->removeMember(targetNickname);
+	channel->removeOperator(targetNickname);
+	channel->removeInvited(targetNickname);
 	std::string kickMessage = ":" + client.getNickname() + " KICK " + channelName + " " + targetNickname;
+	if (!msg.getTrailing().empty())
+		kickMessage += " :" + msg.getTrailing();
 	broadcastMessageToChannel(kickMessage, *channel, "");
 }
 
