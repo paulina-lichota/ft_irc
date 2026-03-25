@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/22 16:23:34 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/24 19:00:40 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/25 11:36:05 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,8 +23,8 @@ class Client {
 		std::string	_realname; // ''
 		std::string	_hostname; // host or IP address
 		std::string	_buffer; // buffer per dati ricevuti dal client, usato per gestire messaggi incompleti
-		// bool		_passwordAccepted; // true se il client ha inviato PASS <password> corretta, altrimenti false
-		// bool		_registered; // true se il client ha completato la registrazione (PASS + NICK + USER), altrimenti false
+		bool		_passwordAccepted; // true se il client ha inviato PASS <password> corretta, altrimenti false
+		bool		_registered; // true se il client ha completato la registrazione (PASS + NICK + USER), altrimenti false
 	public:
 		Client();
 		Client(int fd, const std::string &hostname);
@@ -35,6 +35,15 @@ class Client {
 		// Getters
 		std::string &getBuffer();
 		int getFd() const;
+		bool getPasswordAccepted() const;
+		bool getRegistered() const;
+
+		// Setters
+		void setNickname(const std::string &nickname);
+		void setUsername(const std::string &username);
+		void setRealname(const std::string &realname);
+		void setHostname(const std::string &hostname);
+		void setPasswordAccepted(bool accepted);
 
 		// Message
 		void appendToBuffer(const std::string &data);

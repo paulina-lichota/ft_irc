@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Message.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/24 17:18:37 by plichota          #+#    #+#             */
-/*   Updated: 2026/03/24 20:26:25 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/25 10:50:36 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,7 @@ Message::Message(const std::string &raw): _prefix(""), _command(""), _params(), 
 	// 3. params and trailing extraction
 	while (!line.empty()) {
 		if (line[0] == ':') {
-			_params.push_back(line.substr(1));
+			_trailing = line.substr(1);
 			break;
 		}
 		if (line[0] == ' ') {
@@ -102,7 +102,9 @@ Message::Message(const std::string &raw): _prefix(""), _command(""), _params(), 
 /* -------------------------------------------------------------------------- */
 
 const std::string&	Message::getPrefix() const { return _prefix; }
+
 const std::string&	Message::getCommand() const { return _command; }
+
 const std::vector<std::string>&	Message::getParams() const { return _params; }
 
 const std::string&	Message::getError() const { return _error; }

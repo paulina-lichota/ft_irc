@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/25 10:40:38 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/25 11:44:05 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -183,30 +183,38 @@ void Server::initActions()
 	_actions["PASS"] = &Server::handlePass;
 }
 
-void Server::dispatchAction(const Message &msg, const Client &client)
+void Server::dispatchAction(const Message &msg, Client &client)
 {
 	std::string command = msg.getCommand();
-	std::map<std::string, void (Server::*)(const Message&, const Client&)>::iterator it;
+	std::map<std::string, void (Server::*)(const Message&, Client&)>::iterator it;
 	it = _actions.find(command);
 	if (it != _actions.end())
 		(this->*it->second)(msg, client);
 	else
 	{
-		// errore 421 ERR_UNKNOWNCOMMAND -> si potrebbe fare un error manager
+		sendMessageToClient(client.getFd(), "421 " + command + " :Unknown command"); //si potrebbe fare un error mananger (enum con codici di errore e messaggi)
 		std::cout << "Unknown command: " << command << std::endl;
 	}
 }
 
 /* ------------------------------------ Commands ----------------------------------- */
 
-void Server::handlePass(const Message &msg, const Client &client)
-{
-	(void)msg;
-	(void)client;
-	// TODO
+void Server::handlePass(const Message &msg, Client &client) {
+	if (client.getRegistered()) {
+		sendMessageToClient(client.getFd(), "462 :You may not reregister");
+		return ;
+	}
+	if (msg.getParams().size() != 1) {
+		sendMessageToClient(client.getFd(), "461 " + msg.getCommand() + " :Not enough parameters");
+		return ;
+	}
+	if (msg.getParams()[0] != _password) {
+		sendMessageToClient(client.getFd(), "464 :Password incorrect");
+		handleClientDisconnection(pollfdIndexByFd(client.getFd()));
+		return ;
+	}
+	client.setPasswordAccepted(true);
 }
-
-
 
 /* ------------------------------------ Utils ----------------------------------- */
 
@@ -216,6 +224,19 @@ void Server::addPollFd(int fd) {
 	newPollFd.events = POLLIN;
 	newPollFd.revents = 0;
 	_pollFds.push_back(newPollFd);
+}
+
+void Server::sendMessageToClient(int fd, const std::string &message) {
+	std::string msgWithCRLF = message + "\r\n";
+	send(fd, msgWithCRLF.c_str(), msgWithCRLF.size(), 0);
+}
+
+size_t Server::pollfdIndexByFd(int fd) {
+	for (size_t i = 0; i < _pollFds.size(); i++) {
+		if (_pollFds[i].fd == fd)
+			return (i);
+	}
+	return (_pollFds.size()); // ritorna un indice fuori range se non trovato
 }
 
 /* ------------------------------------ Static methods ----------------------------------- */

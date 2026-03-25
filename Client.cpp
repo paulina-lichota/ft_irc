@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/22 16:24:21 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/25 10:41:39 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/25 11:36:14 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,15 +59,30 @@ Client& Client::operator=(const Client& other){
 
 Client::~Client() {}
 
+/* ------------------------------------ Getters ----------------------------------- */
+
+std::string &Client::getBuffer() { return (_buffer); }
+
+int Client::getFd() const { return (_fd); }
+
+bool Client::getPasswordAccepted() const { return (_passwordAccepted); }
+
+bool Client::getRegistered() const { return (_registered); }
+
+/* ------------------------------------ Setters ----------------------------------- */
+
+void Client::setNickname(const std::string &nickname) {
+	_nickname = nickname;
+}
+
+void Client::setUsername(const std::string &username) {
+	_username = username;
+}
+
+void Client::setPasswordAccepted(bool accepted) {
+	_passwordAccepted = accepted;
+}
 /* -------------------------------------------------------------------------- */
-
-std::string &Client::getBuffer() {
-	return (_buffer);
-}
-
-int Client::getFd() const {
-	return (_fd);
-}
 
 void Client::appendToBuffer(const std::string &data) {
 	_buffer += data;

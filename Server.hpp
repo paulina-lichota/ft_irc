@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/24 20:27:26 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/25 11:38:14 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,13 +27,13 @@ class Server {
 		std::map<int, Client>		_clients;	 // associazione fd -> oggetto client
 		static const int			POLL_TIMEOUT = -1; // -1 per aspettare eventi all'infinito
 		// std::vector<Channel>		_channels; // lista di canali esistenti, ogni canale ha una lista di client connessi
-		std::map<std::string, void (Server::*)(const Message&, const Client&)> _actions; // mappa comando + pointer a funzione
+		std::map<std::string, void (Server::*)(const Message&, Client&)> _actions; // mappa comando + pointer a funzione
 	public:
 		Server(const int port, const std::string &password);
 		~Server();
 
 		void run();
-		
+
 		// Handlers:
 		void handleNewConnection();
 		void handleClientDisconnection(size_t index);
@@ -41,18 +41,19 @@ class Server {
 
 		// Utility:
 		void addPollFd(int fd);
-
+		void sendMessageToClient(int fd, const std::string &message);
+		size_t pollfdIndexByFd(int fd);
 		// Static methods:
 		static bool isValidPort(const std::string &port);
 		static bool isValidPassword(const std::string &password);
 
 		// Dispatcher
 		void initActions();
-		void dispatchAction(const Message &msg, const Client &client);
+		void dispatchAction(const Message &msg, Client &client);
 
 		// Actions
 		// TODO
-		void handlePass(const Message &msg, const Client &client);
+		void handlePass(const Message &msg, Client &client);
 
 };
 
