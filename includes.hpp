@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   includes.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:17:58 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/24 17:13:26 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/25 10:42:19 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@
 # include <poll.h> // poll(), struct pollfd
 # include <cerrno> // errno
 # include <arpa/inet.h> // inet_ntoa()
+# include <set> // std::set
 
 # define GREEN   	"\033[0;32m"
 # define YELLOW  	"\033[0;33m"

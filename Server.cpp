@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/24 20:25:53 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/25 10:40:38 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,32 +14,45 @@
 #include "Message.hpp"
 #include "signal.hpp"
 
+/*
+** Inizializza il server: crea il socket, lo configura e lo mette in ascolto.
+**
+** Sequenza obbligatoria:
+**   socket()     → crea il socket TCP/IPv4, ritorna un fd
+**   fcntl()      → rende il socket non-bloccante (O_NONBLOCK)
+**   setsockopt() → abilita SO_REUSEADDR: evita EADDRINUSE al riavvio
+**   socaddr_in   → struttura per indirizzo IPv4 (sin_family, sin_addr, sin_port), htons() per port in network byte order
+**   bind()       → associa il socket all'indirizzo locale (INADDR_ANY:port)
+**   listen()     → mette il socket in ascolto; SOMAXCONN = backlog massimo di sistema
+**
+** In caso di errore, chiude il fd aperto e lancia un'eccezione.
+*/
 Server::Server(const int port, const std::string &password) : _port(port), _password(password) {
 	initActions();
-	_serverFd = socket(AF_INET, SOCK_STREAM, 0); //AF_INET -> socket IPv4, SOCK_STREAM -> socket TCP (stream-oriented), protocollo 0 -> TCP (default per SOCK_STREAM)
+	_serverFd = socket(AF_INET, SOCK_STREAM, 0);
 	if (_serverFd < 0)
 		throw std::runtime_error("Error creating socket");
-	fcntl(_serverFd, F_SETFL, O_NONBLOCK); // setto socket non-bloccante per accettare connessioni senza bloccare il server
-	int opt = 1; //tipo booleano che serve per setsockopt, 1 per attivare SO_REUSEADDR
-	if (setsockopt(_serverFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(int)) < 0) { //SO_REUSEADDR permette il riuso immediato della porta
+	fcntl(_serverFd, F_SETFL, O_NONBLOCK);
+	int opt = 1;
+	if (setsockopt(_serverFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(int)) < 0) {
 		close(_serverFd);
 		throw std::runtime_error("Error setting socket options");
 	}
-	struct sockaddr_in server_addr; //salvo l'indirizzo del server in una struct sockaddr_in (IPv4)
+	struct sockaddr_in server_addr;
 	std::memset(&server_addr, 0, sizeof(server_addr));
-	server_addr.sin_family = AF_INET; // IPv4
-	server_addr.sin_addr.s_addr = INADDR_ANY; // accetta connessioni su tutte le interfacce, es. ethernet, wifi, localhost
-	server_addr.sin_port = htons(_port); // porta in network byte order
-	if (bind(_serverFd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) { //associo socket - indirizzo locale (ip + port) con bind()
+	server_addr.sin_family = AF_INET;
+	server_addr.sin_addr.s_addr = INADDR_ANY;
+	server_addr.sin_port = htons(_port);
+	if (bind(_serverFd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
 		close(_serverFd);
 		throw std::runtime_error("Error binding socket");
 	}
-	if (listen(_serverFd, SOMAXCONN) < 0) { //metto il socket in stato listen (), SOMAXCONN è il backlog massimo supportato dal sistema operativo (numero di connessioni in attesa)
+	if (listen(_serverFd, SOMAXCONN) < 0) {
 		close(_serverFd);
 		throw std::runtime_error("Error listening on socket");
 	}
-	addPollFd(_serverFd); // aggiungo socket del server a _pollFds per monitorarlo con poll() per nuove connessioni
-	std::cout << "Server started on port " << _port << std::endl; // server pronto ad ascoltare
+	addPollFd(_serverFd);
+	std::cout << "Server started on port " << _port << std::endl;
 }
 
 Server::~Server() {
@@ -50,24 +63,34 @@ Server::~Server() {
 
 /* ------------------------------------ Main run loop ----------------------------------- */
 
+/*
+** Main loop del server. Gira finché non arriva SIGINT (received_signal != 0).
+**
+** @poll        blocca finché almeno un fd ha un evento, o scade POLL_TIMEOUT
+** @EINTR       se poll() viene interrotto da un segnale, riprende il loop
+** @_pollFds[0] è sempre il server socket — POLLIN su di esso significa nuova connessione
+** @_pollFds[i] per i > 0 sono i client socket:
+**                POLLIN           → dati in arrivo → handleClientMessage()
+**                POLLHUP | POLLERR → disconnessione o errore → handleClientDisconnection()
+*/
 void	Server::run(){
-	while (received_signal == 0) // SIGINT
+	while (received_signal == 0)
 	{
 		int ret = poll(&_pollFds[0], _pollFds.size(), POLL_TIMEOUT);
 		if (ret < 0) {
-			if (errno == EINTR) // interrotto da un segnale, possiamo ignorare e continuare
+			if (errno == EINTR)
 				continue;
 			std::cerr << "Error in poll()" << std::endl;
 			break;
 		}
-		if (_pollFds[0].revents & POLLIN) //revents è un bitmask, controllo se c'è POLLIN sul server socket (nuova connessione)
+		if (_pollFds[0].revents & POLLIN)
 			handleNewConnection();
 		for (size_t i = 1; i < _pollFds.size(); i++) {
 			if (_pollFds[i].revents & POLLIN) {
-				if (!handleClientMessage(i)) // se ritorna false -> client disconnesso
-					i--; // se client disconnesso, handleClientMessage() chiama handleClientDisconnection() che rimuove il client da _pollFds
+				if (!handleClientMessage(i))
+					i--;
 			}
-			else if (_pollFds[i].revents & (POLLHUP | POLLERR)) { //POLLHUP -> client si è disconnesso, POLLERR -> errore sul fd
+			else if (_pollFds[i].revents & (POLLHUP | POLLERR)) {
 				handleClientDisconnection(i);
 				i--;
 				//tolgo client dai canali
@@ -78,22 +101,27 @@ void	Server::run(){
 
 /* ------------------------------------ Handlers ----------------------------------- */
 
-// accetto nuova connessione, ottengo nuovo client socket
-// setto client socket non-bloccante
-// aggiungo client socket a _pollFds per monitorarlo
-// creo oggetto Client associato al client socket, lo salvo in _clients con fd come chiave
-void Server::handleNewConnection() {
+/*
+** Accetta una nuova connessione in arrivo sul server socket.
+**
+**   accept()  → estrae la connessione dalla coda del kernel, ritorna un nuovo fd
+**               dedicato a questo client (il server socket rimane in ascolto)
+**   fcntl()   → rende il client fd non-bloccante
+**   inet_ntoa → ricava l'hostname (stringa IP) dall'indirizzo restituito da accept()
+**
+** Il nuovo client viene aggiunto sia a _fds (per poll()) che a _clients (fd → Client).
+*/void Server::handleNewConnection() {
 	struct sockaddr_in clientAddr;
 	socklen_t clientAddrLen = sizeof(clientAddr);
-	int clientFd = accept(_serverFd, (struct sockaddr *)&clientAddr, &clientAddrLen); // accetto nuova connessione, ottengo nuovo client socket
+	int clientFd = accept(_serverFd, (struct sockaddr *)&clientAddr, &clientAddrLen);
 	if (clientFd < 0) {
 		std::cerr << "Error accepting new connection" << std::endl;
 		return ;
 	}
-	fcntl(clientFd, F_SETFL, O_NONBLOCK); // setto client socket non-bloccante
-	addPollFd(clientFd); // aggiungo client socket a _pollFds per monitorarlo
-	std::string hostname = inet_ntoa(clientAddr.sin_addr); // ottengo hostname del client da indirizzo IP
-	_clients[clientFd] = Client(clientFd, hostname); // creo oggetto Client associato al client socket, lo salvo in _clients con fd come chiave
+	fcntl(clientFd, F_SETFL, O_NONBLOCK);
+	addPollFd(clientFd);
+	std::string hostname = inet_ntoa(clientAddr.sin_addr);
+	_clients[clientFd] = Client(clientFd, hostname);
 	std::cout << "New client connected: fd " << clientFd << std::endl;
 }
 
@@ -104,29 +132,45 @@ void Server::handleClientDisconnection(size_t index) {
 	_pollFds.erase(_pollFds.begin() + index);
 }
 
-// buffer si riferisce al singolo client
+/*
+** Legge i dati in arrivo dal client e processa i messaggi completi.
+**
+**   recv()                → legge dal client fd nel buffer temporaneo s_buffer
+**                           n == 0  → client ha chiuso la connessione (EOF)
+**                           n <  0  → errore o disconnessione improvvisa
+**                           in entrambi i casi: handleClientDisconnection()
+**
+**   appendToBuffer()      → accoda i byte letti al buffer persistente del client
+**                           (necessario perché TCP non garantisce messaggi interi:
+**                           un singolo recv() può contenere un frammento)
+**
+**   extractMessageFromBuffer() → estrae un messaggio completo (\r\n) dal buffer;
+**                                 ritorna stringa vuota se il messaggio non è ancora completo
+**
+**   dispatchAction()      → parsa il messaggio e instrada al handler corretto
+**
+** Ritorna false se il client si è disconnesso, true altrimenti.
+*/
 bool Server::handleClientMessage(size_t index) {
-	char s_buffer[IRC_MSG_MAX_LEN]; // buffer temporaneo per leggere dati da client socket
-	int n = recv(_pollFds[index].fd, s_buffer, sizeof(s_buffer) - 1, 0); //leggo dati da client socket, li metto in buffer
+	char s_buffer[IRC_MSG_MAX_LEN];
+	int n = recv(_pollFds[index].fd, s_buffer, sizeof(s_buffer) - 1, 0);
 	if (n <= 0) {
-		handleClientDisconnection(index); // se n == 0 -> client ha chiuso connessione, se n < 0 -> errore (es. client disconnesso improvvisamente)
+		handleClientDisconnection(index);
 		return (false);
 	}
 	std::cout << "Received from client fd " << _pollFds[index].fd << ": " << std::string(s_buffer, n) << std::endl;
-	_clients[_pollFds[index].fd].appendToBuffer(std::string(s_buffer, n)); // aggiungo dati al buffer del client
+	_clients[_pollFds[index].fd].appendToBuffer(std::string(s_buffer, n));
 	std::string message;
 	while (!(message = _clients[_pollFds[index].fd].extractMessageFromBuffer()).empty()) {
 		std::cout << "Complete message: " << message << std::endl;
-		Message msg(message); // creo oggetto Message parsando il messaggio completo
+		Message msg(message);
 		std::cout << "Parsed message - Prefix: " << msg.getPrefix() << ", Command: " << msg.getCommand() << ", Params: ";
 		for (size_t i = 0; i < msg.getParams().size(); i++) {
 			std::cout << "[" << msg.getParams()[i] << "]";
 		}
-		// std::cout << ", Trailing: " << msg.getTrailing();
+		std::cout << ", Trailing: " << msg.getTrailing();
 		std::cout << std::endl;
-		// qui va la logica per processare il messaggio completo, es. parsing comando, esecuzione comando, invio risposta
 		dispatchAction(msg, _clients[_pollFds[index].fd]); // dispatch del messaggio al dispatcher, che processa il comando e invia eventuali risposte
-		
 	}
 	return (true);
 }
@@ -176,10 +220,16 @@ void Server::addPollFd(int fd) {
 
 /* ------------------------------------ Static methods ----------------------------------- */
 
-// porte 0 - 1023 well-known ports / porte privilegiate, richiedono privilegi di root
-// le porte sono numeri a 16 bit, quindi il max è 2¹⁶ - 1
+/*
+** Valida la porta passata come argomento da riga di comando.
+**
+** Le porte sono numeri a 16 bit (0–65535, ovvero 2¹⁶ - 1).
+** Le porte 0–1023 sono riservate al sistema operativo (well-known ports)
+** e richiedono privilegi di root — accettiamo solo porte > 1024.
+**
+*/
 bool	Server::isValidPort(const std::string &port) {
-	if (port.empty() || port.size() > 5) // check per rischio overflow con atoi, max 65535 = 5 cifre
+	if (port.empty() || port.size() > 5)
 		return (false);
 	for (size_t i = 0; i < port.size(); i++) {
 		if (!std::isdigit(port[i]))
@@ -189,14 +239,22 @@ bool	Server::isValidPort(const std::string &port) {
 	return (port_num > 1024 && port_num <= 65535);
 }
 
-// no trim spazi, IRC accetta qualsiasi stringa dopo "PASS " come password
-// se un messaggio supera i 512 caratteri viene troncato, ignorando il resto
-// IRC non impone criteri di sicurezza, si possono potenzialmente imporre criteri aggiuntivi
-//   ma questi vanno gestiti lato server, non dipende dal protocollo IRC
+/*
+** Valida la password passata come argomento da riga di comando.
+**
+** IRC non impone criteri di sicurezza sulla password — qualsiasi stringa
+** non vuota è tecnicamente valida dopo "PASS ".
+** Non viene fatto trim degli spazi: la password viene confrontata così com'è.
+**
+** Il limite di 510 caratteri deriva dallo standard IRC: i messaggi hanno
+** lunghezza massima di 512 byte incluso \r\n, quindi "PASS " occupa 5 byte
+** e ne restano 510 per la password stessa. Messaggi più lunghi verrebbero
+** troncati dal protocollo, rendendo l'autenticazione impossibile.
+*/
 bool	Server::isValidPassword(const std::string &password) {
 	if (password.empty())
 		return (false);
-	if (password.size() > 510) // max 510 caratteri escluso "PASS " (standard IRC)
+	if (password.size() > 510)
 		return (false);
 	return (true);
 }

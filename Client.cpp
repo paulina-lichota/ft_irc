@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/22 16:24:21 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/24 16:29:32 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/25 10:41:39 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,11 +73,22 @@ void Client::appendToBuffer(const std::string &data) {
 	_buffer += data;
 }
 
+/*
+** Estrae un messaggio completo dal buffer di ricezione del client.
+**
+** I messaggi IRC terminano con \r\n — finché il delimitatore non è presente,
+** il messaggio è incompleto (TCP può consegnare i dati in frammenti).
+**
+** Se \r\n è trovato: estrae la stringa fino al delimitatore, rimuove
+** il messaggio estratto dal buffer (incluso \r\n), e lo ritorna.
+** Se \r\n non è trovato: ritorna stringa vuota — il chiamante richiamerà
+** questa funzione al prossimo recv().
+*/
 std::string Client::extractMessageFromBuffer() {
-	size_t pos = _buffer.find("\r\n"); // i messaggi IRC terminano con \r\n
+	size_t pos = _buffer.find("\r\n");
 	if (pos == std::string::npos)
-		return (""); // non c'è un messaggio completo nel buffer
-	std::string message = _buffer.substr(0, pos); // estraggo messaggio completo
-	_buffer.erase(0, pos + 2); // rimuovo messaggio estratto dal buffer
+		return ("");
+	std::string message = _buffer.substr(0, pos);
+	_buffer.erase(0, pos + 2);
 	return (message);
 }
