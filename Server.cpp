@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/25 11:44:05 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/25 12:56:03 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -162,14 +162,14 @@ bool Server::handleClientMessage(size_t index) {
 	_clients[_pollFds[index].fd].appendToBuffer(std::string(s_buffer, n));
 	std::string message;
 	while (!(message = _clients[_pollFds[index].fd].extractMessageFromBuffer()).empty()) {
-		std::cout << "Complete message: " << message << std::endl;
+		// std::cout << "Complete message: " << message << std::endl;
 		Message msg(message);
-		std::cout << "Parsed message - Prefix: " << msg.getPrefix() << ", Command: " << msg.getCommand() << ", Params: ";
-		for (size_t i = 0; i < msg.getParams().size(); i++) {
-			std::cout << "[" << msg.getParams()[i] << "]";
-		}
-		std::cout << ", Trailing: " << msg.getTrailing();
-		std::cout << std::endl;
+		// std::cout << "Parsed message - Prefix: " << msg.getPrefix() << ", Command: " << msg.getCommand() << ", Params: ";
+		// for (size_t i = 0; i < msg.getParams().size(); i++) {
+		// 	std::cout << "[" << msg.getParams()[i] << "]";
+		// }
+		// std::cout << ", Trailing: " << msg.getTrailing();
+		// std::cout << std::endl;
 		dispatchAction(msg, _clients[_pollFds[index].fd]); // dispatch del messaggio al dispatcher, che processa il comando e invia eventuali risposte
 	}
 	return (true);
@@ -181,10 +181,14 @@ bool Server::handleClientMessage(size_t index) {
 void Server::initActions()
 {
 	_actions["PASS"] = &Server::handlePass;
+	_actions["NICK"] = &Server::handleNick;
+	_actions["USER"] = &Server::handleUser;
 }
 
 void Server::dispatchAction(const Message &msg, Client &client)
 {
+	if (!msg.isValid())
+		return ;
 	std::string command = msg.getCommand();
 	std::map<std::string, void (Server::*)(const Message&, Client&)>::iterator it;
 	it = _actions.find(command);
@@ -216,6 +220,58 @@ void Server::handlePass(const Message &msg, Client &client) {
 	client.setPasswordAccepted(true);
 }
 
+void Server::handleNick(const Message &msg, Client &client) {
+	if (!client.getPasswordAccepted()) {
+		sendMessageToClient(client.getFd(), "451 :You have not registered");
+		return ;
+	}
+	if (msg.getParams().size() != 1) {
+		sendMessageToClient(client.getFd(), "461 " + msg.getCommand() + " :Not enough parameters");
+		return ;
+	}
+	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
+		if (it->second.getNickname() == msg.getParams()[0]) {
+			sendMessageToClient(client.getFd(), "433 " + msg.getParams()[0] + " :Nickname is already in use");
+			return ;
+		}
+	}
+	if (client.getNickname().empty()) {
+		client.setNickname(msg.getParams()[0]);
+	}
+	else if (client.getRegistered()) {
+		std::string oldNickname = client.getNickname();
+		client.setNickname(msg.getParams()[0]);
+		std::string nicknameChangeMsg = ":" + oldNickname + " NICK :" + client.getNickname();
+		sendMessageToClient(client.getFd(), nicknameChangeMsg);
+	}
+	if (!client.getRegistered() && !client.getUsername().empty() && !client.getNickname().empty() && !client.getHostname().empty()) {
+		client.setRegistered(true);
+		sendWelcomeMessage(client);
+	}
+}
+
+void Server::handleUser(const Message &msg, Client &client) {
+	if (!client.getPasswordAccepted()) {
+		sendMessageToClient(client.getFd(), "451 :You have not registered");
+		return ;
+	}
+	if (msg.getParams().size() < 3) {
+		sendMessageToClient(client.getFd(), "461 " + msg.getCommand() + " :Not enough parameters");
+		return ;
+	}
+	if (client.getRegistered()) {
+		sendMessageToClient(client.getFd(), "462 :You may not reregister");
+		return ;
+	}
+	client.setUsername(msg.getParams()[0]);
+	client.setHostname(msg.getParams()[1]);
+	client.setRealname(msg.getTrailing());
+	if (!client.getNickname().empty()) {
+		client.setRegistered(true);
+		sendWelcomeMessage(client);
+	}
+}
+
 /* ------------------------------------ Utils ----------------------------------- */
 
 void Server::addPollFd(int fd) {
@@ -237,6 +293,16 @@ size_t Server::pollfdIndexByFd(int fd) {
 			return (i);
 	}
 	return (_pollFds.size()); // ritorna un indice fuori range se non trovato
+}
+
+void Server::sendWelcomeMessage(const Client &client) {
+	std::string nick = client.getNickname();
+	std::string host = "ircserv";
+
+	sendMessageToClient(client.getFd(), ":" + host + " 001 " + nick + " :Welcome to the IRC network, " + nick + "!");
+	sendMessageToClient(client.getFd(), ":" + host + " 002 " + nick + " :Your host is " + host + ", running version 1.0");
+	sendMessageToClient(client.getFd(), ":" + host + " 003 " + nick + " :This server was created " + std::string(__DATE__));
+	sendMessageToClient(client.getFd(), ":" + host + " 004 " + nick + " " + host + " 1.0 o o");
 }
 
 /* ------------------------------------ Static methods ----------------------------------- */

@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/22 16:23:34 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/25 11:36:05 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/25 12:52:33 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,12 +37,15 @@ class Client {
 		int getFd() const;
 		bool getPasswordAccepted() const;
 		bool getRegistered() const;
-
+		const std::string& getNickname() const;
+		const std::string& getUsername() const;
+		const std::string& getHostname() const;
 		// Setters
 		void setNickname(const std::string &nickname);
 		void setUsername(const std::string &username);
 		void setRealname(const std::string &realname);
 		void setHostname(const std::string &hostname);
+		void setRegistered(bool registered);
 		void setPasswordAccepted(bool accepted);
 
 		// Message

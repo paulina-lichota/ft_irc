@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/22 16:24:21 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/25 11:36:14 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/25 12:53:21 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,19 +69,26 @@ bool Client::getPasswordAccepted() const { return (_passwordAccepted); }
 
 bool Client::getRegistered() const { return (_registered); }
 
+const std::string& Client::getNickname() const { return (_nickname); }
+
+const std::string& Client::getUsername() const { return (_username); }
+
+const std::string& Client::getHostname() const { return (_hostname); }
+
 /* ------------------------------------ Setters ----------------------------------- */
 
-void Client::setNickname(const std::string &nickname) {
-	_nickname = nickname;
-}
+void Client::setNickname(const std::string &nickname) { _nickname = nickname; }
 
-void Client::setUsername(const std::string &username) {
-	_username = username;
-}
+void Client::setUsername(const std::string &username) { _username = username; }
 
-void Client::setPasswordAccepted(bool accepted) {
-	_passwordAccepted = accepted;
-}
+void Client::setPasswordAccepted(bool accepted) { _passwordAccepted = accepted; }
+
+void Client::setRegistered(bool registered) { _registered = registered; }
+
+void Client::setRealname(const std::string &realname) { _realname = realname;}
+
+void Client::setHostname(const std::string &hostname) { _hostname = hostname; }
+
 /* -------------------------------------------------------------------------- */
 
 void Client::appendToBuffer(const std::string &data) {

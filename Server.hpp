@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/25 11:38:14 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/25 12:49:01 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,8 @@ class Server {
 		void addPollFd(int fd);
 		void sendMessageToClient(int fd, const std::string &message);
 		size_t pollfdIndexByFd(int fd);
+		void sendWelcomeMessage(const Client &client);
+		
 		// Static methods:
 		static bool isValidPort(const std::string &port);
 		static bool isValidPassword(const std::string &password);
@@ -54,7 +56,8 @@ class Server {
 		// Actions
 		// TODO
 		void handlePass(const Message &msg, Client &client);
-
+		void handleNick(const Message &msg, Client &client);
+		void handleUser(const Message &msg, Client &client);
 };
 
 #endif
