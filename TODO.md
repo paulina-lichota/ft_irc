@@ -34,13 +34,13 @@
 ## Fase 3 — Canali
 - [X] Classe Channel — attributi base
 - [x] JOIN
-- [ ] PART
+- [ ] PART // facoltativo
 - [ ] PRIVMSG (canale)
 - [ ] PRIVMSG (privato)
 - [ ] TOPIC (lettura)
 
 ## Fase 4 — Operatori
-- [ ] KICK
+- [.] KICK //wip caro
 - [ ] INVITE
 - [ ] Test con nc — messaggi parziali
 - [ ] TOPIC (modifica)
@@ -52,12 +52,18 @@
 
 ## Fase 5 — Test
 - [ ] Test con nc — messaggi parziali
-- [ ] Test con HexChat — connessione base
-- [ ] Test con più client contemporanei
+- [X] Test con HexChat — connessione base
+- [X] Test con più client contemporanei
 - [ ] Test disconnessione brusca
 - [ ] Test tutti i comandi operatore
 - [ ] Test errori numerici
 
+
+
+//facoltativi:
+
+- [ ] PING / PONG
+- [ ] QUIT
 ## TO  FIX:
 
 - [] NICK: se nick già registrato e cambio nick → notifica il client e tutti i canali in cui si trova

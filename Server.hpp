@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/25 20:06:59 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/25 20:18:32 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,11 @@ class Server {
 
 		void run();
 
+		//checks di esistenza
+		bool isNick(const std::string& nick);
+		bool isChannel(const std::string& channel);
+		bool isNickInChannel(const std::string& nick);
+
 		// Handlers:
 		void handleNewConnection();
 		void handleClientDisconnection(size_t index);
@@ -56,15 +61,14 @@ class Server {
 		void printChannels();
 		Channel* getChannelByName(const std::string &name); // ritorna NULL se non esiste
 		void createChannel(const std::string &name);
-		
+
 		// invia message a tutti i client del canale tranne toExclude. sender già dentro la stringa
 		void broadcastMessageToChannel(const std::string &message, const Channel &channel, const std::string &toExclude);
 
-		// void kick(Client client);		  // kick un client dal canale
-		// void invite(Client client);		  // invita un client al canale
-	
+		void	privmsg(const Message& msg, const Client& client);
+
 		/*
-			All the messages sent from one client to a channel have to be forwarded to every other client that joined the channel.
+		All the messages sent from one client to a channel have to be forwarded to every other client that joined the channel.
 		*/
 
 		// Dispatcher
@@ -72,12 +76,14 @@ class Server {
 		void dispatchAction(const Message &msg, Client &client);
 
 		// Actions
-		// TODO
 		void handlePass(const Message &msg, Client &client);
 		void handleNick(const Message &msg, Client &client);
 		void handleUser(const Message &msg, Client &client);
 		void handlePing(const Message &msg, Client &client);
 		void handleJoin(const Message &msg, Client &client);
+		// Operator actions:
+		void handleKick(const Message &msg, Client &client);
+		// void handleInvite(const Message &msg, Client &client); // invita un client al can
 };
 
 #endif

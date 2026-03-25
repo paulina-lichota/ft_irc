@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/25 20:14:09 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/25 20:18:10 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -187,8 +187,13 @@ void Server::initActions()
 	_actions["USER"] = &Server::handleUser;
 	_actions["PING"] = &Server::handlePing;
 	_actions["JOIN"] = &Server::handleJoin;
+	// _actions["PRIVMSG"] = &Server::handlePrivmsg;
+	// _actions["KICK"] = &Server::handleKick;
+	// _actions["INVITE"] = &Server::handleInvite;
+	// aggiungere
 	// AGGIORNARE MAN MANO
 }
+
 
 // 421 ERR_UNKNOWNCOMMAND "<command> :Unknown command"
 void Server::dispatchAction(const Message &msg, Client &client)
@@ -251,16 +256,35 @@ void Server::handleNick(const Message &msg, Client &client) {
 			return ;
 		}
 	}
-	if (client.getNickname().empty()) {
+	if (!client.getRegistered()) {
 		client.setNickname(msg.getParams()[0]);
-	}
-	else if (client.getRegistered()) {
+	} else {
 		std::string oldNickname = client.getNickname();
 		client.setNickname(msg.getParams()[0]);
-		std::string nicknameChangeMsg = ":" + oldNickname + " NICK :" + client.getNickname();
+		std::string nicknameChangeMsg = ":" + oldNickname + "!" + client.getUsername() + "@" + client.getHostname() + " NICK :" + client.getNickname();
 		sendMessageToClient(client.getFd(), nicknameChangeMsg);
+		for (size_t i = 0; i < _channels.size(); i++) {
+			Channel &ch = _channels[i];
+			bool wasMember = ch.isMember(oldNickname);
+			bool wasOperator = ch.isOperator(oldNickname);
+			bool wasInvited = ch.isInvited(oldNickname);
+			if (wasMember) {
+				broadcastMessageToChannel(nicknameChangeMsg, ch, oldNickname);
+				ch.removeMember(oldNickname);
+				ch.addMember(client.getNickname());
+			}
+			if (wasOperator) {
+				ch.removeOperator(oldNickname);
+				ch.addOperator(client.getNickname());
+			}
+			if (wasInvited) {
+				ch.removeInvited(oldNickname);
+				ch.addInvited(client.getNickname());
+			}
+		}
 	}
-	if (!client.getRegistered() && !client.getUsername().empty() && !client.getNickname().empty() && !client.getHostname().empty()) {
+	if (!client.getRegistered() && !client.getUsername().empty() && !client.getNickname().empty() && !client.getHostname().empty())
+	{
 		client.setRegistered(true);
 		sendWelcomeMessage(client);
 	}
@@ -327,7 +351,7 @@ void Server::handleJoin(const Message &msg, Client &client)
 		sendMessageToClient(client.getFd(), "461 " + msg.getCommand() + " :Not enough parameters");
 		return ;
 	}
-	
+
 	// canale non esiste -> crea e aggiunge come operator e member (gestito dopo)
 	std::string channelName = msg.getParams()[0];
 
@@ -357,7 +381,7 @@ void Server::handleJoin(const Message &msg, Client &client)
 
 	// invite only
 	if (channel->getInviteOnly() && !channel->isInvited(client.getNickname())) {
-			sendMessageToClient(client.getFd(), "473 " + client.getNickname() + " " 
+			sendMessageToClient(client.getFd(), "473 " + client.getNickname() + " "
 				+ channelName + " :Cannot join channel (+i)");
 			return;
 	}
@@ -367,7 +391,8 @@ void Server::handleJoin(const Message &msg, Client &client)
 			sendMessageToClient(client.getFd(), "471 " + client.getNickname() + " " + channelName + " :Cannot join channel (+l)");
 			return;
 	}
-	
+
+
 	// aggiungo come membro
 	channel->addMember(client.getNickname());
 	// setto operatore
@@ -381,6 +406,54 @@ void Server::handleJoin(const Message &msg, Client &client)
 	const std::string message = ":" + client.getNickname() + " JOIN " + channelName; // da formattare meglio i messaggi
 	broadcastMessageToChannel(message, *channel, "");
 }
+
+/* ------------------------------------ Operator actions ----------------------------------- */
+
+void Server::handleKick(const Message &msg, Client &client) {
+	if (!client.getRegistered()) {
+		sendMessageToClient(client.getFd(), "451 :You have not registered");
+		std::cout << "[fd:" << client.getFd() << "] KICK → 451" << std::endl;
+		return ;
+	}
+	if (msg.getParams().size() < 2) {
+		sendMessageToClient(client.getFd(), "461 " + msg.getCommand() + " :Not enough parameters");
+		std::cout << "[fd:" << client.getFd() << "] KICK → 461" << std::endl;
+		return ;
+	}
+	std::string channelName = msg.getParams()[0];
+	Channel *channel = getChannelByName(channelName);
+	// check if channel exists
+	if (channel == NULL) {
+		sendMessageToClient(client.getFd(), "403 " + msg.getCommand() + " :No such channel");
+		std::cout << "[fd:" << client.getFd() << "] KICK → 403" << std::endl;
+		return ;
+	}
+	// check if client is operator of the channel
+	if (!channel->isOperator(client.getNickname())) {
+		sendMessageToClient(client.getFd(), "482 " + channelName + " :You're not channel operator");
+		std::cout << "[fd:" << client.getFd() << "] KICK → 482" << std::endl;
+		return ;
+	}
+	// check if target client is in the channel
+	std::string targetNickname = msg.getParams()[1];
+	if (!channel->isMember(targetNickname)) {
+		sendMessageToClient(client.getFd(), "441 " + targetNickname + " " + channelName + " :They aren't on that channel");
+		std::cout << "[fd:" << client.getFd() << "] KICK → 441" << std::endl;
+		return ;
+	}
+	// remove target client from channel and send KICK message to channel members (everyone, also sender)
+	channel->removeMember(targetNickname);
+	std::string kickMessage = ":" + client.getNickname() + " KICK " + channelName + " " + targetNickname;
+	broadcastMessageToChannel(kickMessage, *channel, "");
+}
+
+// void Server::handleInvite(const Message &msg, Client &client)
+// {
+// 	// check if client is operator of the channel
+// 	// check if channel exists
+// 	// check if target client exists
+// 	// send INVITE message to target client
+// }
 
 /* ------------------------------------ Channel ----------------------------------- */
 
@@ -457,11 +530,11 @@ void Server::sendWelcomeMessage(const Client &client) {
 
 int Server::getFdByNickname(const std::string &nickname)
 {
-    for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
-        if (it->second.getNickname() == nickname)
-            return it->first;
-    }
-    return -1;
+	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
+		if (it->second.getNickname() == nickname)
+			return it->first;
+	}
+	return -1;
 }
 
 /* ------------------------------------ Static methods ----------------------------------- */
@@ -522,4 +595,72 @@ bool Server::isValidNickname(const std::string &nickname) {
             return false;
     }
     return true;
+}
+
+bool	Server::isNick(const std::string& nick) {
+	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
+		if (it->second.getNickname() == nick) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool	Server::isChannel(const std::string& channel) {
+	for (std::vector<Channel>::const_iterator it = _channels.begin();
+		 it != _channels.end(); ++it)
+	{
+		if (it->getName() == channel)
+			return true;
+	}
+	return false;
+}
+
+void	Server::privmsg(const Message& msg, const Client& client)
+{
+	if (msg.getParams().empty()) {
+		sendMessageToClient(client.getFd(), ":" + _name + " 461 " + client.getNickname() + " PRIVMSG :Not enough parameters\r\n");
+		return ;
+	}
+	if (msg.getTrailing().empty()) {
+		sendMessageToClient(client.getFd(), ":" + _name + " 412 " + client.getNickname() + " :No text to send\r\n");
+		return ;
+	}
+	std::string target = msg.getParams()[0];
+	// ===================== CHANNEL =====================
+	if (!target.empty() && target[0] == '#')
+	{
+		if (!isChannel(target)) {
+			sendMessageToClient(client.getFd(),
+				":" + _name + " 403 " + client.getNickname() + " " + target + " :No such channel\r\n");
+			return;
+		}
+		std::map<int, Client>::iterator it = _clients.find(client.getFd());
+		if (it == _clients.end())
+			return;
+		std::string sender = it->second.getNickname();
+		Channel *ch = getChannelByName(target);
+		if (!ch->isMember(sender)){
+			sendMessageToClient(client.getFd(),
+				":" + _name + " 404 " + client.getNickname() + " " + target + " :Cannot send to channel\r\n");
+			return ;
+		}
+	}
+	// ===================== NICK =====================
+	else {
+		if (!isNick(target)) {
+			sendMessageToClient(client.getFd(),
+				":" + _name + " 401 " + client.getNickname() + " " + target + " :No such nick/channel\r\n");
+			return;
+		}
+		std::map<int, Client>::iterator it = _clients.find(client.getFd());
+		if (it == _clients.end())
+			return;
+		std::string sender = it->second.getNickname();
+		int targetFd = getFdByNickname(target);
+		if (targetFd == -1)
+			return;
+		std::string message = ":" + sender + " PRIVMSG " + target + " :" + msg.getTrailing() + "\r\n";
+		sendMessageToClient(targetFd, message);
+	}
 }
