@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/25 13:23:46 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/25 16:03:39 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ Server::Server(const int port, const std::string &password) : _port(port), _pass
 		throw std::runtime_error("Error listening on socket");
 	}
 	addPollFd(_serverFd);
-	std::cout << "Server started on port " << _port << std::endl;
+	std::cout << GREEN << "Server started on port " << _port << RESET << std::endl;
 }
 
 Server::~Server() {
@@ -81,7 +81,7 @@ void	Server::run(){
 		if (ret < 0) {
 			if (errno == EINTR)
 				continue;
-			std::cerr << "Error in poll()" << std::endl;
+			std::cerr << RED <<"Error in poll()" << RESET << std::endl;
 			break;
 		}
 		if (_pollFds[0].revents & POLLIN)
@@ -116,18 +116,18 @@ void	Server::run(){
 	socklen_t clientAddrLen = sizeof(clientAddr);
 	int clientFd = accept(_serverFd, (struct sockaddr *)&clientAddr, &clientAddrLen);
 	if (clientFd < 0) {
-		std::cerr << "Error accepting new connection" << std::endl;
+		std::cerr << RED << "Error accepting new connection" << RESET << std::endl;
 		return ;
 	}
 	fcntl(clientFd, F_SETFL, O_NONBLOCK);
 	addPollFd(clientFd);
 	std::string hostname = inet_ntoa(clientAddr.sin_addr);
 	_clients[clientFd] = Client(clientFd, hostname);
-	std::cout << "New client connected: fd " << clientFd << std::endl;
+	std::cout << "[fd:" << clientFd << "] New client connected from " << hostname << std::endl;
 }
 
 void Server::handleClientDisconnection(size_t index) {
-	std::cout << "Client fd " << _pollFds[index].fd << " disconnected" << std::endl;
+	std::cout << "[fd:" << _pollFds[index].fd << "] Client disconnected" << std::endl;
 	close(_pollFds[index].fd);
 	_clients.erase(_pollFds[index].fd);
 	_pollFds.erase(_pollFds.begin() + index);
@@ -159,12 +159,12 @@ bool Server::handleClientMessage(size_t index) {
 		handleClientDisconnection(index);
 		return (false);
 	}
-	std::cout << "Received from client fd " << _pollFds[index].fd << ": " << std::string(s_buffer, n) << std::endl;
 	_clients[_pollFds[index].fd].appendToBuffer(std::string(s_buffer, n));
 	std::string message;
 	while (!(message = _clients[_pollFds[index].fd].extractMessageFromBuffer()).empty()) {
 		// std::cout << "Complete message: " << message << std::endl;
 		Message msg(message);
+		std::cout << "[fd:" << _pollFds[index].fd << "] " << msg.getCommand() << std::endl;
 		// std::cout << "Parsed message - Prefix: " << msg.getPrefix() << ", Command: " << msg.getCommand() << ", Params: ";
 		// for (size_t i = 0; i < msg.getParams().size(); i++) {
 		// 	std::cout << "[" << msg.getParams()[i] << "]";
@@ -188,6 +188,8 @@ void Server::initActions()
 	_actions["JOIN"] = &Server::handleJoin;
 	// AGGIORNARE MAN MANO
 }
+
+// 421 ERR_UNKNOWNCOMMAND "<command> :Unknown command"
 void Server::dispatchAction(const Message &msg, Client &client)
 {
 	if (!msg.isValid())
@@ -200,24 +202,31 @@ void Server::dispatchAction(const Message &msg, Client &client)
 	else
 	{
 		sendMessageToClient(client.getFd(), "421 " + command + " :Unknown command"); //si potrebbe fare un error mananger (enum con codici di errore e messaggi)
-		std::cout << "Unknown command: " << command << std::endl;
+		std::cout << "[fd:" << client.getFd() << "] " << command << " → 421" << std::endl;
 	}
 }
 
 /* ------------------------------------ Commands ----------------------------------- */
 
+// 462 ERR_ALREADYREGISTRED ":You may not reregister"
+// 461 ERR_NEEDMOREPARAMS "<command> :Not enough parameters"
+// 464 ERR_PASSWDMISMATCH ":Password incorrect"
+
 void Server::handlePass(const Message &msg, Client &client) {
 	if (client.getRegistered()) {
 		sendMessageToClient(client.getFd(), "462 :You may not reregister");
+		std::cout << "[fd:" << client.getFd() << "] PASS → 462" << std::endl;
 		return ;
 	}
 	if (msg.getParams().size() != 1) {
 		sendMessageToClient(client.getFd(), "461 " + msg.getCommand() + " :Not enough parameters");
+		std::cout << "[fd:" << client.getFd() << "] PASS → 461" << std::endl;
 		return ;
 	}
 	if (msg.getParams()[0] != _password) {
 		sendMessageToClient(client.getFd(), "464 :Password incorrect");
-		handleClientDisconnection(pollfdIndexByFd(client.getFd()));
+		std::cout << "[fd:" << client.getFd() << "] PASS → 464" << std::endl;
+		// handleClientDisconnection(pollfdIndexByFd(client.getFd())); //forse no? controllare protocollo
 		return ;
 	}
 	client.setPasswordAccepted(true);
@@ -226,15 +235,18 @@ void Server::handlePass(const Message &msg, Client &client) {
 void Server::handleNick(const Message &msg, Client &client) {
 	if (!client.getPasswordAccepted()) {
 		sendMessageToClient(client.getFd(), "451 :You have not registered");
+		std::cout << "[fd:" << client.getFd() << "] NICK → 451" << std::endl;
 		return ;
 	}
 	if (msg.getParams().size() != 1) {
 		sendMessageToClient(client.getFd(), "461 " + msg.getCommand() + " :Not enough parameters");
+		std::cout << "[fd:" << client.getFd() << "] NICK → 461" << std::endl;
 		return ;
 	}
 	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
 		if (it->second.getNickname() == msg.getParams()[0]) {
 			sendMessageToClient(client.getFd(), "433 " + msg.getParams()[0] + " :Nickname is already in use");
+			std::cout << "[fd:" << client.getFd() << "] NICK → 433" << std::endl;
 			return ;
 		}
 	}
@@ -256,14 +268,17 @@ void Server::handleNick(const Message &msg, Client &client) {
 void Server::handleUser(const Message &msg, Client &client) {
 	if (!client.getPasswordAccepted()) {
 		sendMessageToClient(client.getFd(), "451 :You have not registered");
+		std::cout << "[fd:" << client.getFd() << "] USER → 451" << std::endl;
 		return ;
 	}
 	if (msg.getParams().size() < 3) {
 		sendMessageToClient(client.getFd(), "461 " + msg.getCommand() + " :Not enough parameters");
+		std::cout << "[fd:" << client.getFd() << "] USER → 461" << std::endl;
 		return ;
 	}
 	if (client.getRegistered()) {
 		sendMessageToClient(client.getFd(), "462 :You may not reregister");
+		std::cout << "[fd:" << client.getFd() << "] USER → 462" << std::endl;
 		return ;
 	}
 	client.setUsername(msg.getParams()[0]);
@@ -283,6 +298,7 @@ void Server::handlePing(const Message &msg, Client &client)
 {
 	if (msg.getParams().empty()) {
 		sendMessageToClient(client.getFd(), "409 :No origin specified"); // ERR_NOORIGIN
+		std::cout << "[fd:" << client.getFd() << "] PING → 409" << std::endl;
 		return;
 	}
 	std::string message = "PONG " + msg.getParams()[0];
@@ -308,7 +324,7 @@ void Server::handleJoin(const Message &msg, Client &client)
 	// canale esiste -> Channel.handleJoin(client)
 
 	// canale non esiste -> Channel.create(client)
-	
+
 }
 
 /* ------------------------------------ Channel ----------------------------------- */
@@ -360,6 +376,7 @@ void Server::sendWelcomeMessage(const Client &client) {
 	sendMessageToClient(client.getFd(), ":" + host + " 002 " + nick + " :Your host is " + host + ", running version 1.0");
 	sendMessageToClient(client.getFd(), ":" + host + " 003 " + nick + " :This server was created " + std::string(__DATE__));
 	sendMessageToClient(client.getFd(), ":" + host + " 004 " + nick + " " + host + " 1.0 o o");
+	std::cout << "[fd:" << client.getFd() << "] Sent welcome messages (001-004)" << std::endl;
 }
 
 /* ------------------------------------ Static methods ----------------------------------- */

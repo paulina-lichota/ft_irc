@@ -24,10 +24,10 @@
 - [X] Parser messaggi IRC (prefix, command, params, trailing)
 
 ## Fase 2 — Handshake (tutti insieme)
-- [ ] PASS
-- [ ] NICK + check nickname uniqueness
-- [ ] USER
-- [ ] Welcome messages (001 002 003 004)
+- [X] PASS
+- [X] NICK + check nickname uniqueness
+- [X] USER
+- [X] Welcome messages (001 002 003 004)
 - [ ] PING / PONG
 - [ ] QUIT
 
@@ -57,3 +57,55 @@
 - [ ] Test disconnessione brusca
 - [ ] Test tutti i comandi operatore
 - [ ] Test errori numerici
+
+## TO  FIX:
+
+Unknown command: CAP
+Received from client fd 4: QUIT :Leaving
+
+Unknown command: QUIT
+Client fd 4 disconnected
+
+<!-- ----------------------------------------------------------------------- -->
+
+Con due client:
+
+> ./ircserv 6667 password
+Server started on port 6667
+New client connected: fd 4
+Received from client fd 4: ciao
+
+Unknown command: ciao
+Received from client fd 4: PASS password
+Received from client fd 4:
+
+Received from client fd 4: NICK pippo
+
+Received from client fd 4: USER pippo 0 * :Pippo Baudo
+
+Client fd 4 disconnected
+New client connected: fd 4
+Received from client fd 4: NICK pippo
+
+Received from client fd 4: PASS pippo
+
+Received from client fd 4: NICK pluto
+Received from client fd 4:
+
+New client connected: fd 5
+Received from client fd 5: NICK fra
+
+Received from client fd 5: PASS ciao
+Received from client fd 5:
+
+Client fd 5 disconnected
+
+
+cwannhed@c1r1p11:~$ nc -C 127.0.0.1 6667
+NICK fra
+451 :You have not registered
+PASS ciao
+464 :Password incorrect
+PASS password
+nc: write failed (0/2): Broken pipe
+cwannhed@c1r1p11:~$
