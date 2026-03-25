@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/25 12:59:11 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/25 13:23:30 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ class Server {
 		std::vector<struct pollfd>	_pollFds; // array di fd dei clients da monitorare
 		std::map<int, Client>		_clients;	 // associazione fd -> oggetto client
 		static const int			POLL_TIMEOUT = -1; // -1 per aspettare eventi all'infinito
-		// std::vector<Channel>		_channels; // lista di canali esistenti, ogni canale ha una lista di client connessi
+		std::vector<Channel>		_channels; // lista di canali esistenti, ogni canale ha una lista di client connessi
 		std::map<std::string, void (Server::*)(const Message&, Client&)> _actions; // mappa comando + pointer a funzione
 	public:
 		Server(const int port, const std::string &password);
@@ -49,6 +49,10 @@ class Server {
 		static bool isValidPort(const std::string &port);
 		static bool isValidPassword(const std::string &password);
 
+		// Channels
+		void printChannels();
+		Channel* getChannelByName(const std::string &name); // ritorna NULL se non esiste
+		
 		// Dispatcher
 		void initActions();
 		void dispatchAction(const Message &msg, Client &client);
@@ -59,7 +63,7 @@ class Server {
 		void handleNick(const Message &msg, Client &client);
 		void handleUser(const Message &msg, Client &client);
 		void handlePing(const Message &msg, Client &client);
-
+		void handleJoin(const Message &msg, Client &client);
 };
 
 #endif

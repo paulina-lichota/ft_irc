@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/24 17:55:39 by plichota          #+#    #+#             */
-/*   Updated: 2026/03/25 10:42:04 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/25 13:21:36 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,8 +33,8 @@ class Channel
 			· o: Give/take channel operator privilege
 			· l: Set/remove the user limit to channel
 		*/
-		std::vector<Client> _clients; // lista di tutti i client connessi al canale
-		std::set<int> _operators;	  // fd degli operatori
+		std::set<int> _operators;	   // fd degli operatori
+		std::set<int> _clients;	  // fd di tutti i client connessi al canale
 		int _maxUsers;
 
 	public:
@@ -45,9 +45,12 @@ class Channel
 		std::string getName();
 
 		// Everyone
-		void propagateMessageToChannel(std::string message, Client sender); // invia message a tutti i client del canale tranne sender
+		void propagateMessageToChannel(const std::string &message, Client sender); // invia message a tutti i client del canale tranne sender
 
+		void printChannelInfo();
 		// Operators
+		void create(Client client);	// crea canale se non esiste, se il canale è protetto da password, client deve fornire la password corretta
+		void join(Client client);			// aggiunge un client al canale
 		void kick(Client client);		  // kick un client dal canale
 		void invite(Client client);		  // invita un client al canale
 		void setTopic(std::string topic); // setta il topic del canale

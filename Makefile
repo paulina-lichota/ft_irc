@@ -7,6 +7,7 @@ SRC = main.cpp \
 	Server.cpp \
 	Client.cpp \
 	Message.cpp \
+	Channel.cpp \
 	signal.cpp
 
 all: $(NAME)

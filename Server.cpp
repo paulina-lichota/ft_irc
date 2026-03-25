@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/25 12:58:43 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/25 13:23:46 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,8 @@
 **
 ** In caso di errore, chiude il fd aperto e lancia un'eccezione.
 */
-Server::Server(const int port, const std::string &password) : _port(port), _password(password) {
+Server::Server(const int port, const std::string &password) : _port(port), _password(password), _channels()
+{
 	initActions();
 	_serverFd = socket(AF_INET, SOCK_STREAM, 0);
 	if (_serverFd < 0)
@@ -184,6 +185,7 @@ void Server::initActions()
 	_actions["NICK"] = &Server::handleNick;
 	_actions["USER"] = &Server::handleUser;
 	_actions["PING"] = &Server::handlePing;
+	_actions["JOIN"] = &Server::handleJoin;
 	// AGGIORNARE MAN MANO
 }
 void Server::dispatchAction(const Message &msg, Client &client)
@@ -287,6 +289,44 @@ void Server::handlePing(const Message &msg, Client &client)
 	if (msg.getParams().size() > 1)
 		message += " " + msg.getParams()[1];
 	sendMessageToClient(client.getFd(), message);
+}
+
+
+void Server::handleJoin(const Message &msg, Client &client)
+{
+	// autenticato
+	if (!client.getPasswordAccepted()) {
+		sendMessageToClient(client.getFd(), "451 :You have not registered");
+		return ;
+	}
+
+	(void)msg;
+	// no params
+
+	// canale non esiste
+
+	// canale esiste -> Channel.handleJoin(client)
+
+	// canale non esiste -> Channel.create(client)
+	
+}
+
+/* ------------------------------------ Channel ----------------------------------- */
+
+Channel* Server::getChannelByName(const std::string &name)
+{
+	for (size_t i = 0; i < _channels.size(); i++)
+	{
+		if (_channels[i].getName() == name)
+			return &_channels[i];
+	}
+	return NULL;
+}
+
+void Server::printChannels()
+{
+	for (size_t i = 0; i < _channels.size(); i++)
+		_channels[i].printChannelInfo();
 }
 
 /* ------------------------------------ Utils ----------------------------------- */
