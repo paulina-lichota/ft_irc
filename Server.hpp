@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/25 20:18:32 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/25 22:11:34 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,8 @@ class Server {
 		void run();
 
 		//checks di esistenza
-		bool isNick(const std::string& nick);
-		bool isChannel(const std::string& channel);
+		// bool isNick(const std::string& nick);
+		// bool isChannel(const std::string& channel);
 		bool isNickInChannel(const std::string& nick);
 
 		// Handlers:

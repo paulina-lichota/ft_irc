@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/25 22:09:02 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/25 22:12:24 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -639,24 +639,24 @@ bool Server::isValidNickname(const std::string &nickname) {
     return true;
 }
 
-bool	Server::isNick(const std::string& nick) {
-	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
-		if (it->second.getNickname() == nick) {
-			return true;
-		}
-	}
-	return false;
-}
+// bool	Server::isNick(const std::string& nick) {
+// 	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
+// 		if (it->second.getNickname() == nick) {
+// 			return true;
+// 		}
+// 	}
+// 	return false;
+// }
 
-bool	Server::isChannel(const std::string& channel) {
-	for (std::vector<Channel>::const_iterator it = _channels.begin();
-		 it != _channels.end(); ++it)
-	{
-		if (it->getName() == channel)
-			return true;
-	}
-	return false;
-}
+// bool	Server::isChannel(const std::string& channel) {
+// 	for (std::vector<Channel>::const_iterator it = _channels.begin();
+// 		 it != _channels.end(); ++it)
+// 	{
+// 		if (it->getName() == channel)
+// 			return true;
+// 	}
+// 	return false;
+// }
 
 void	Server::privmsg(const Message& msg, const Client& client)
 {
@@ -672,7 +672,7 @@ void	Server::privmsg(const Message& msg, const Client& client)
 	// ===================== CHANNEL =====================
 	if (!target.empty() && target[0] == '#')
 	{
-		if (!isChannel(target)) {
+		if (getChannelByName(target) == NULL) {
 			sendMessageToClient(client.getFd(),
 				":" + _name + " 403 " + client.getNickname() + " " + target + " :No such channel\r\n");
 			return;
@@ -690,7 +690,7 @@ void	Server::privmsg(const Message& msg, const Client& client)
 	}
 	// ===================== NICK =====================
 	else {
-		if (!isNick(target)) {
+		if (getFdByNickname(target) == -1) {
 			sendMessageToClient(client.getFd(),
 				":" + _name + " 401 " + client.getNickname() + " " + target + " :No such nick/channel\r\n");
 			return;
