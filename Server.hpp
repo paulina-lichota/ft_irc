@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/25 17:04:45 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/25 17:20:55 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ class Server {
 		void sendMessageToClient(int fd, const std::string &message);
 		size_t pollfdIndexByFd(int fd);
 		void sendWelcomeMessage(const Client &client);
-			int getFdByNickname(const std::string &nickname);
+		int getFdByNickname(const std::string &nickname);
 
 		// Static methods:
 		static bool isValidPort(const std::string &port);

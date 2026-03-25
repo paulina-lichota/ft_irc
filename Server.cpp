@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/25 17:12:46 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/25 17:22:20 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -234,7 +234,7 @@ void Server::handlePass(const Message &msg, Client &client) {
 
 void Server::handleNick(const Message &msg, Client &client) {
 	if (!client.getPasswordAccepted()) {
-		sendMessageToClient(client.getFd(), ":server 451 " + client.getNickname() + " :You have not registered\r\n");
+		sendMessageToClient(client.getFd(), ":" + _name + " 451 " + client.getNickname() + " :You have not registered");
 		std::cout << "[fd:" << client.getFd() << "] NICK → 451" << std::endl;
 		return ;
 	}
