@@ -6,7 +6,7 @@
 /*   By: francema <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/25 18:37:25 by francema         ###   ########.fr       */
+/*   Updated: 2026/03/25 19:21:58 by francema         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 
 class Server {
 	private:
-		std::string					_name;
+		std::string					_name; // nome del server, usato nei prefix dei messaggi (es. :ircserv 001 nickname :Welcome to the IRC server)
 		int							_port;
 		std::string					_password; // PASS mypassword -> mypassword == _passoword, altrimenti connessione rifiutata
 		int							_serverFd; // socket del server (ascolta nuovi client)
@@ -59,15 +59,19 @@ class Server {
 		// Channels
 		void printChannels();
 		Channel* getChannelByName(const std::string &name); // ritorna NULL se non esiste
+		void createChannel(const std::string &name);
+
+		// invia message a tutti i client del canale tranne toExclude. sender già dentro la stringa
+		void broadcastMessageToChannel(const std::string &message, const Channel &channel, const std::string &toExclude);
 
 		void	privmsg(const Message& msg, const Client& client);
 		int	join(const Message &msg, const Client &client);	// aggiunge un client al canale, se il canale è protetto da password, client deve fornire la password corretta
 		// void kick(Client client);		  // kick un client dal canale
 		// void invite(Client client);		  // invita un client al canale
+
 		/*
 			All the messages sent from one client to a channel have to be forwarded to every other client that joined the channel.
 		*/
-		void broadcastMessageToChannel(const std::string &message, const Channel &channel, const Client &sender); // invia message a tutti i client del canale tranne sender
 
 		// Dispatcher
 		void initActions();

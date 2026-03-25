@@ -6,7 +6,7 @@
 /*   By: francema <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/25 19:06:28 by francema         ###   ########.fr       */
+/*   Updated: 2026/03/25 19:19:46 by francema         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@
 **
 ** In caso di errore, chiude il fd aperto e lancia un'eccezione.
 */
-Server::Server(const int port, const std::string &password) :_name("vandersborg"), _port(port), _password(password), _channels()
+Server::Server(const int port, const std::string &password) : _name(SERVER_NAME), _port(port), _password(password), _channels()
 {
 	initActions();
 	_serverFd = socket(AF_INET, SOCK_STREAM, 0);
@@ -111,7 +111,8 @@ void	Server::run(){
 **   inet_ntoa → ricava l'hostname (stringa IP) dall'indirizzo restituito da accept()
 **
 ** Il nuovo client viene aggiunto sia a _fds (per poll()) che a _clients (fd → Client).
-*/void Server::handleNewConnection() {
+*/
+void Server::handleNewConnection() {
 	struct sockaddr_in clientAddr;
 	socklen_t clientAddrLen = sizeof(clientAddr);
 	int clientFd = accept(_serverFd, (struct sockaddr *)&clientAddr, &clientAddrLen);
@@ -178,7 +179,6 @@ bool Server::handleClientMessage(size_t index) {
 
 /* ------------------------------------ Dispatcher ----------------------------------- */
 
-// non posso scrivere solo &handleJoin
 void Server::initActions()
 {
 	_actions["PASS"] = &Server::handlePass;
@@ -235,7 +235,7 @@ void Server::handlePass(const Message &msg, Client &client) {
 
 void Server::handleNick(const Message &msg, Client &client) {
 	if (!client.getPasswordAccepted()) {
-		sendMessageToClient(client.getFd(), "451 :You have not registered");
+		sendMessageToClient(client.getFd(), ":" + _name + " 451 " + client.getNickname() + " :You have not registered");
 		std::cout << "[fd:" << client.getFd() << "] NICK → 451" << std::endl;
 		return ;
 	}
@@ -309,22 +309,72 @@ void Server::handlePing(const Message &msg, Client &client)
 }
 
 
+// es. client manda "JOIN #channel"
+//     server risponde "JOIN #channel"
+// può mandare anche "JOIN #channel password" se il canale è protetto da password
+// no params -> ERR_NEEDMOREPARAMS
+// canale non esiste Channel.create(client) → Channel.handleJoin(client)
+// canale esiste -> Channel.handleJoin(client)
 void Server::handleJoin(const Message &msg, Client &client)
 {
 	// autenticato
-	if (!client.getPasswordAccepted()) {
+	if (!client.getRegistered()) {
 		sendMessageToClient(client.getFd(), "451 :You have not registered");
 		return ;
 	}
+	// no channel name in message params
+	if (msg.getParams().size() == 0) {
+		sendMessageToClient(client.getFd(), "461 " + msg.getCommand() + " :Not enough parameters");
+		return ;
+	}
 
-	(void)msg;
-	// no params
+	// canale non esiste -> crea e aggiunge come operator e member (gestito dopo)
+	std::string channelName = msg.getParams()[0];
 
-	// canale non esiste
+	Channel *channel = getChannelByName(channelName);
+	if (channel == NULL) {
+		createChannel(channelName);
+		channel = getChannelByName(channelName);
+	}
 
-	// canale esiste -> Channel.handleJoin(client)
+	// channel password param
+	if (channel->getKey().size() > 0)
+	{
+		// prendo secondo param
+		if (msg.getParams().size() == 1) {
+			sendMessageToClient(client.getFd(), "461 " + msg.getCommand() + " :Not enough parameters");
+			return ;
+		}
+		if (msg.getParams()[1] != channel->getKey()) {
+			sendMessageToClient(client.getFd(), "475 " + msg.getCommand() + " :Channel key is incorrect");
+			return ;
+		}
+	}
 
-	// canale non esiste -> Channel.create(client)
+	// già membro (non può essere aggiunto)
+	if (channel->isMember(client.getNickname()))
+		return;
+
+	// invite only
+	if (channel->getInviteOnly() && !channel->isInvited(client.getNickname())) {
+			sendMessageToClient(client.getFd(), "473 " + client.getNickname() + " "
+				+ channelName + " :Cannot join channel (+i)");
+			return;
+	}
+
+	// limite utenti
+	if (channel->getUsersLimit() > 0 && channel->getMemberCount() >= channel->getUsersLimit()) {
+			sendMessageToClient(client.getFd(), "471 " + client.getNickname() + " " + channelName + " :Cannot join channel (+l)");
+			return;
+	}
+
+	channel->addMember(client.getNickname());
+    if (channel->getMemberCount() == 1)
+        channel->addOperator(client.getNickname());
+    if (channel->isInvited(client.getNickname()))
+        channel->removeInvited(client.getNickname());
+
+	// broadcast message di JOIN a tutti i membri del canale (compreso il nuovo membro)
 
 }
 
@@ -344,6 +394,27 @@ void Server::printChannels()
 {
 	for (size_t i = 0; i < _channels.size(); i++)
 		_channels[i].printChannelInfo();
+}
+
+void Server::createChannel(const std::string &name)
+{
+	if (getChannelByName(name) != NULL)
+		return ;
+	_channels.push_back(Channel(name));
+}
+
+void Server::broadcastMessageToChannel(const std::string &message, const Channel &channel, const std::string &toExclude)
+{
+	// get Members restituisce nicknames
+	// cerco gli fd per ogni nickname
+	const std::set<std::string> &members = channel.getMembers();
+	for (std::set<std::string>::const_iterator it = members.begin(); it != members.end(); ++it) {
+			if (*it != toExclude) {
+					int fd = getFdByNickname(*it);
+					if (fd != -1)
+							sendMessageToClient(fd, message);
+			}
+	}
 }
 
 /* ------------------------------------ Utils ----------------------------------- */
@@ -377,6 +448,7 @@ void Server::sendWelcomeMessage(const Client &client) {
 	sendMessageToClient(client.getFd(), ":" + host + " 002 " + nick + " :Your host is " + host + ", running version 1.0");
 	sendMessageToClient(client.getFd(), ":" + host + " 003 " + nick + " :This server was created " + std::string(__DATE__));
 	sendMessageToClient(client.getFd(), ":" + host + " 004 " + nick + " " + host + " 1.0 o o");
+	std::cout << "[fd:" << client.getFd() << "] Sent welcome messages (001-004)" << std::endl;
 }
 
 int Server::getFdByNickname(const std::string &nickname)
