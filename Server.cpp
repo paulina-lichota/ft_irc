@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/25 18:30:39 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/25 19:06:31 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -321,45 +321,60 @@ void Server::handleJoin(const Message &msg, Client &client)
 		sendMessageToClient(client.getFd(), "451 :You have not registered");
 		return ;
 	}
-
-	// no channel name param
+	// no channel name in message params
 	if (msg.getParams().size() == 0) {
 		sendMessageToClient(client.getFd(), "461 " + msg.getCommand() + " :Not enough parameters");
 		return ;
 	}
-	// canale non esiste
+	
+	// canale non esiste -> crea e aggiunge come operator e member (gestito dopo)
 	std::string channelName = msg.getParams()[0];
+
 	Channel *channel = getChannelByName(channelName);
 	if (channel == NULL) {
-		sendMessageToClient(client.getFd(), "403 " + msg.getCommand() + " :No such channel");
-		return ;
+		createChannel(channelName);
+		channel = getChannelByName(channelName);
 	}
+
 	// channel password param
 	if (channel->getKey().size() > 0)
 	{
 		// prendo secondo param
-		if (msg.getParams().size() == 1)
-		{
+		if (msg.getParams().size() == 1) {
 			sendMessageToClient(client.getFd(), "461 " + msg.getCommand() + " :Not enough parameters");
 			return ;
 		}
-		if (msg.getParams()[1] != channel->getKey()) // non sicuro ??
-		{
+		if (msg.getParams()[1] != channel->getKey()) {
 			sendMessageToClient(client.getFd(), "475 " + msg.getCommand() + " :Channel key is incorrect");
 			return ;
 		}
+	}
 
+	// già membro (non può essere aggiunto)
+	if (channel->isMember(client.getNickname()))
+		return;
+
+	// invite only
+	if (channel->getInviteOnly() && !channel->isInvited(client.getNickname())) {
+			sendMessageToClient(client.getFd(), "473 " + client.getNickname() + " " 
+				+ channelName + " :Cannot join channel (+i)");
+			return;
+	}
+
+	// limite utenti
+	if (channel->getUsersLimit() > 0 && channel->getMemberCount() >= channel->getUsersLimit()) {
+			sendMessageToClient(client.getFd(), "471 " + client.getNickname() + " " + channelName + " :Cannot join channel (+l)");
+			return;
 	}
 	
-	Channel *channel = getChannelByName(channelName);
-	if (channel == NULL)
-		createChannel(channelName);
-	
-		/*JOIN CHANNEL*/
-		// check if password protected and if password param is correct
-		// check if invite only and if client is invited
-		// check if channel is full (users limit)
-		// accept client and send JOIN message to channel members (everyone, also sender)
+	channel->addMember(client.getNickname());
+    if (channel->getMemberCount() == 1)
+        channel->addOperator(client.getNickname());
+    if (channel->isInvited(client.getNickname()))
+        channel->removeInvited(client.getNickname());
+
+	// broadcast message di JOIN a tutti i membri del canale (compreso il nuovo membro)
+
 }
 
 /* ------------------------------------ Channel ----------------------------------- */
@@ -385,6 +400,20 @@ void Server::createChannel(const std::string &name)
 	if (getChannelByName(name) != NULL)
 		return ;
 	_channels.push_back(Channel(name));
+}
+
+void Server::broadcastMessageToChannel(const std::string &message, const Channel &channel, const std::string &toExclude)
+{
+	// get Members restituisce nicknames
+	// cerco gli fd per ogni nickname
+	const std::set<std::string> &members = channel.getMembers();
+	for (std::set<std::string>::const_iterator it = members.begin(); it != members.end(); ++it) {
+			if (*it != toExclude) {
+					int fd = getFdByNickname(*it);
+					if (fd != -1)
+							sendMessageToClient(fd, message);
+			}
+	}
 }
 
 /* ------------------------------------ Utils ----------------------------------- */

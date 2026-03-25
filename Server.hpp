@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/25 18:20:55 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/25 19:04:39 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,11 +55,14 @@ class Server {
 		void printChannels();
 		Channel* getChannelByName(const std::string &name); // ritorna NULL se non esiste
 		void createChannel(const std::string &name);
-		void broadcastMessageToChannel(const std::string &message, const Channel &channel, const Client &sender); // invia message a tutti i client del canale tranne sender
+		
+		// invia message a tutti i client del canale tranne toExclude. sender già dentro la stringa
+		void broadcastMessageToChannel(const std::string &message, const Channel &channel, const std::string &toExclude);
 
 		int	join(const Message &msg, const Client &client);	// aggiunge un client al canale, se il canale è protetto da password, client deve fornire la password corretta
 		// void kick(Client client);		  // kick un client dal canale
 		// void invite(Client client);		  // invita un client al canale
+	
 		/*
 			All the messages sent from one client to a channel have to be forwarded to every other client that joined the channel.
 		*/
