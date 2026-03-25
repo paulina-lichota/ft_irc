@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/25 21:50:34 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/25 21:55:14 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -509,21 +509,21 @@ void Server::sendMessageToClient(int fd, const std::string &message) {
 	const char *data = msgWithCRLF.c_str();
 	size_t total = msgWithCRLF.size();
 	size_t sent = 0;
-	while (sent < total)
-	{
+	while (sent < total) {
 		ssize_t n = send(fd, data + sent, total - sent, 0);
-		if (n < 0)
-		{
+		if (n < 0) {
 			if (errno == EINTR)
-				continue;
-			std::cerr <<  RED <<"[fd:" << fd << "] send() error"<< RESET << std::endl;
-			handleClientDisconnection(pollfdIndexByFd(fd));
-			return;
+			continue;
+			std::cerr << RED << "[fd:" << fd << "] send() error" << RESET << std::endl;
+			size_t idx = pollfdIndexByFd(fd);
+			if (idx < _pollFds.size())
+				handleClientDisconnection(idx);
+			return ;
 		}
-		if (n == 0) // connessione chiusa dall'altro lato
-			break;
-		sent += n;
-	}
+			if (n == 0) // connessione chiusa dall'altro lato
+				break;
+			sent += n;
+		}
 }
 
 size_t Server::pollfdIndexByFd(int fd) {
