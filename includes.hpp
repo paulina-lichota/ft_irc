@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:17:58 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/25 10:42:19 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/25 16:01:28 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@
 # define YELLOW  	"\033[0;33m"
 # define BLUE    	"\033[0;34m"
 # define MAGENTA 	"\033[0;35m"
+# define RED     	"\033[0;31m"
 # define RESET   	"\033[0m"
 
 # define IRC_MSG_MAX_LEN	512
