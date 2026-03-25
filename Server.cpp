@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/25 22:24:42 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/25 22:30:33 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -684,6 +684,23 @@ bool Server::isValidNickname(const std::string &nickname) {
             return false;
     }
     return true;
+}
+
+// la lunghezza in realta' è 200 caratteri incluso prefisso
+// Non può essere solo # o & senza niente dopo
+// Non può includere '\x07' - ASCII BEL (bell sound)
+bool Server::isValidChannelName(const std::string &channelName)
+{
+	if (channelName.length() > 100 || channelName.length() < 2)
+		return false;
+	if (channelName[0] != '#' && channelName[0] != '&')
+		return false;
+	for (size_t i = 1; i < channelName.length(); i++) {
+		if (isspace(channelName[i]) || channelName[i] == ',' || channelName[i] == ':'
+			|| channelName[i] == '\r' || channelName[i] == '\n' || channelName[i] == '\x07')
+			return false;
+	}
+	return true;
 }
 
 // bool	Server::isNick(const std::string& nick) {

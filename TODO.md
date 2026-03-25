@@ -60,7 +60,7 @@
 ## TO  FIX:
 - [] NICK: se nick già registrato e cambio nick → notifica il client e tutti i canali in cui si trova
 - [] NICK: aggiungere isValidNickname (esiste già)
-- [] PRIVMSG nel canale non va
+- [X] PRIVMSG nel canale non va
 - [] server si spegne: client cosa deve fare??? analizzare comportamento atteso (nc: write failed (0/2): Broken pipe)
 
 PRIVMSG #42: ciao
