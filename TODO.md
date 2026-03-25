@@ -31,15 +31,15 @@
 
 
 ## Fase 3 — Canali
-- [ ] Classe Channel — attributi base
-- [ ] JOIN
-- [ ] PART
-- [ ] PRIVMSG (canale)
-- [ ] PRIVMSG (privato)
+- [X] Classe Channel — attributi base
+- [.] JOIN (paulina wip)
+- [.] PART (facoltativo)
+- [.] PRIVMSG (canale) //fra wip
+- [.] PRIVMSG (privato) //fra wip
 - [ ] TOPIC (lettura)
 
 ## Fase 4 — Operatori
-- [ ] KICK
+- [.] KICK //wip caro
 - [ ] INVITE
 - [ ] Test con nc — messaggi parziali
 - [ ] TOPIC (modifica)
@@ -51,11 +51,15 @@
 
 ## Fase 5 — Test
 - [ ] Test con nc — messaggi parziali
-- [ ] Test con HexChat — connessione base
-- [ ] Test con più client contemporanei
+- [X] Test con HexChat — connessione base
+- [X] Test con più client contemporanei
 - [ ] Test disconnessione brusca
 - [ ] Test tutti i comandi operatore
 - [ ] Test errori numerici
+
+
+
+//facoltativi:
 
 - [ ] PING / PONG
 - [ ] QUIT
