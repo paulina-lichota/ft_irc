@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/25 22:30:33 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/25 22:43:57 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -205,6 +205,7 @@ void Server::initActions()
 	_actions["PING"] = &Server::handlePing;
 	_actions["JOIN"] = &Server::handleJoin;
 	_actions["PRIVMSG"] = &Server::handlePrivmsg;
+	_actions["TOPIC"] = &Server::handleTopic;
 	// _actions["KICK"] = &Server::handleKick;
 	// _actions["INVITE"] = &Server::handleInvite;
 	// aggiungere
@@ -418,7 +419,6 @@ void Server::handleJoin(const Message &msg, Client &client)
 			return;
 	}
 
-
 	// aggiungo come membro
 	channel->addMember(client.getNickname());
 	// setto operatore
@@ -475,6 +475,32 @@ void Server::handlePrivmsg(const Message &msg, Client &client)
 	}
 }
 
+
+// es. client manda "TOPIC #channel" (no : trailing args)
+//     server risponde "TOPIC #channel :topic"
+// ES. client manda "TOPIC #channel :topic" (with : trailing args)
+//     server risponde "TOPIC #channel :topic"
+void Server::handleTopic(const Message &msg, Client &client)
+{
+	// se manca argomento canale [1]
+	//  errore argomento mancante
+	// controlla che canale esista
+	// controlla che user sia membro del canale
+
+	// se manca argomento topic [2] LETTURA
+	//  topic esiste → manda 332 col topic
+	//  topic non esiste → manda 331 "No topic is set"
+	//  return
+	//  errore argomento mancante
+	
+	// se c'è trailing → IMPOSTAZIONE
+	// se _topicRestricted = true controlla che client isOperator
+	// se non lo è return  errore 482
+
+	// a questo punto il client o è operatore o non è restricted
+	// cambia topic
+	//  manda broadcast ( trailing vuoto se c'è : senza nulla dopo)
+}
 
 /* ------------------------------------ Operator actions ----------------------------------- */
 
