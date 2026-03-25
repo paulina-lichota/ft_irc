@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: francema <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/25 16:12:46 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/25 18:37:25 by francema         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 
 class Server {
 	private:
+		std::string					_name;
 		int							_port;
 		std::string					_password; // PASS mypassword -> mypassword == _passoword, altrimenti connessione rifiutata
 		int							_serverFd; // socket del server (ascolta nuovi client)
@@ -34,6 +35,11 @@ class Server {
 
 		void run();
 
+		//checks di esistenza
+		bool isNick(const std::string& nick);
+		bool isChannel(const std::string& channel);
+		bool isNickInChannel(const std::string& nick);
+
 		// Handlers:
 		void handleNewConnection();
 		void handleClientDisconnection(size_t index);
@@ -44,7 +50,7 @@ class Server {
 		void sendMessageToClient(int fd, const std::string &message);
 		size_t pollfdIndexByFd(int fd);
 		void sendWelcomeMessage(const Client &client);
-			int getFdByNickname(const std::string &nickname);
+		int getFdByNickname(const std::string &nickname);
 
 		// Static methods:
 		static bool isValidPort(const std::string &port);
@@ -54,6 +60,7 @@ class Server {
 		void printChannels();
 		Channel* getChannelByName(const std::string &name); // ritorna NULL se non esiste
 
+		void	privmsg(const Message& msg, const Client& client);
 		int	join(const Message &msg, const Client &client);	// aggiunge un client al canale, se il canale è protetto da password, client deve fornire la password corretta
 		// void kick(Client client);		  // kick un client dal canale
 		// void invite(Client client);		  // invita un client al canale
