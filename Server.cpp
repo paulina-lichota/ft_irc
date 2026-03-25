@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/25 19:32:34 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/25 19:47:22 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -255,36 +255,35 @@ void Server::handleNick(const Message &msg, Client &client) {
 			return ;
 		}
 	}
-	if (client.getNickname().empty()) {
+	if (!client.getRegistered()) {
 		client.setNickname(msg.getParams()[0]);
-	}
-	else if (client.getRegistered()) {
+	} else {
 		std::string oldNickname = client.getNickname();
 		client.setNickname(msg.getParams()[0]);
-		std::string nicknameChangeMsg = ":" + oldNickname + " NICK :" + client.getNickname();
+		std::string nicknameChangeMsg = ":" + oldNickname + "!" + client.getUsername() + "@" + client.getHostname() + " NICK :" + client.getNickname();
 		sendMessageToClient(client.getFd(), nicknameChangeMsg);
-		// broadcast del cambio nickname a tutti i canali di cui il client è membro
-		// for (size_t i = 0; i < _channels.size(); i++) {
-		// 	if (_channels[i].isMember(oldNickname)) {
-		// 		_channels[i].broadcastMessage(nicknameChangeMsg);
-		// 	}
-		// }
-		// for (size_t i = 0; i < _channels.size(); i++) {
-		// 	if (_channels[i].isOperator(oldNickname)) {
-		// 		_channels[i].removeOperator(oldNickname);
-		// 		_channels[i].addOperator(client.getNickname());
-		// 	}
-		// 	if (_channels[i].isInvited(oldNickname)) {
-		// 		_channels[i].removeInvited(oldNickname);
-		// 		_channels[i].addInvited(client.getNickname());
-		// 	}
-		// 	if (_channels[i].isMember(oldNickname)) {
-		// 		_channels[i].removeMember(oldNickname);
-		// 		_channels[i].addMember(client.getNickname());
-		// 	}
-		// }
+		for (size_t i = 0; i < _channels.size(); i++) {
+			Channel &ch = _channels[i];
+			bool wasMember = ch.isMember(oldNickname);
+			bool wasOperator = ch.isOperator(oldNickname);
+			bool wasInvited = ch.isInvited(oldNickname);
+			if (wasMember) {
+				broadcastMessageToChannel(nicknameChangeMsg, ch, oldNickname);
+				ch.removeMember(oldNickname);
+				ch.addMember(client.getNickname());
+			}
+			if (wasOperator) {
+				ch.removeOperator(oldNickname);
+				ch.addOperator(client.getNickname());
+			}
+			if (wasInvited) {
+				ch.removeInvited(oldNickname);
+				ch.addInvited(client.getNickname());
+			}
+		}
 	}
-	if (!client.getRegistered() && !client.getUsername().empty() && !client.getNickname().empty() && !client.getHostname().empty()) {
+	if (!client.getRegistered() && !client.getUsername().empty() && !client.getNickname().empty() && !client.getHostname().empty())
+	{
 		client.setRegistered(true);
 		sendWelcomeMessage(client);
 	}
@@ -444,7 +443,7 @@ void Server::handleKick(const Message &msg, Client &client) {
 	// remove target client from channel and send KICK message to channel members (everyone, also sender)
 	channel->removeMember(targetNickname);
 	std::string kickMessage = ":" + client.getNickname() + " KICK " + channelName + " " + targetNickname;
-	// channel->broadcastMessage(kickMessage);
+	broadcastMessageToChannel(kickMessage, *channel, "");
 }
 
 // void Server::handleInvite(const Message &msg, Client &client)

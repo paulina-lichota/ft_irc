@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/25 19:32:51 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/25 19:37:49 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,7 +76,6 @@ class Server {
 		void dispatchAction(const Message &msg, Client &client);
 
 		// Actions
-		// TODO
 		void handlePass(const Message &msg, Client &client);
 		void handleNick(const Message &msg, Client &client);
 		void handleUser(const Message &msg, Client &client);
@@ -85,7 +84,6 @@ class Server {
 		// Operator actions:
 		void handleKick(const Message &msg, Client &client);
 		// void handleInvite(const Message &msg, Client &client); // invita un client al can
-		// void invite(Client client);		  // invita un client al canale
 };
 
 #endif
