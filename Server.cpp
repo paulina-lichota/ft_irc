@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/25 11:44:05 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/25 11:50:33 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -214,6 +214,15 @@ void Server::handlePass(const Message &msg, Client &client) {
 		return ;
 	}
 	client.setPasswordAccepted(true);
+}
+
+void Server::handlePing(const Message &msg, const Client &client)
+{
+	std::string pong = "PONG\r\n";
+	(void)msg;
+	(void)client;
+	// send "Pong" to client
+	// client.send(pong);
 }
 
 /* ------------------------------------ Utils ----------------------------------- */
