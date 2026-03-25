@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: francema <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/25 13:24:32 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/25 16:01:51 by francema         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -308,7 +308,7 @@ void Server::handleJoin(const Message &msg, Client &client)
 	// canale esiste -> Channel.handleJoin(client)
 
 	// canale non esiste -> Channel.create(client)
-	
+
 }
 
 /* ------------------------------------ Channel ----------------------------------- */
@@ -401,4 +401,22 @@ bool	Server::isValidPassword(const std::string &password) {
 	if (password.size() > 510)
 		return (false);
 	return (true);
+}
+
+int	Server::join(const Message &msg, const Client &client) {
+	size_t		i = 0;
+	if (msg.getParams().size() > 1)
+		Server::sendMessageToClient(client.getFd(), "461 " + client.getNickname() + " " + msg.getCommand() + " :Not enough parameters"); //ERR_BADCHANMASK se non vogliamo gestire gli spazzi
+	std::string channels = msg.getParams()[0];
+	while (!channels.empty()) {
+		if (channels[0] != '#') {
+			Server::sendMessageToClient(client.getFd(), "403 " + client.getNickname() + " " + msg.getCommand() + " :No such channel"); //ERR_NOSUCHCHANNEL deve iniziare con # channel
+		}
+		size_t pos = channels.find(',');
+		std::string channel = channels.substr(0, pos); //estraggo il channel
+		/*if (!channe.exist(channel))
+			Server::sendMessageToClient(client.getFd(), "403 " + client.getNickname() + " " + msg.getCommand() + " :No such channel");
+		*/
+		channels = channels.substr(pos + 1);
+	}
 }
