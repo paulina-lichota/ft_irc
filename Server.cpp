@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/25 22:04:34 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/25 22:06:12 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -265,6 +265,11 @@ void Server::handleNick(const Message &msg, Client &client) {
 		sendMessageToClient(client.getFd(), "461 " + msg.getCommand() + " :Not enough parameters");
 		std::cout << "[fd:" << client.getFd() << "] NICK → 461" << std::endl;
 		return ;
+	}
+	if (!isValidNickname(msg.getParams()[0])) {
+		sendMessageToClient(client.getFd(), "432 " + msg.getParams()[0] + " :Erroneous nickname");
+		std::cout << "[fd:" << client.getFd() << "] NICK → 432" << std::endl;
+		return;
 	}
 	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
 		if (it->second.getNickname() == msg.getParams()[0]) {
