@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/25 18:26:18 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/25 18:30:39 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -350,10 +350,16 @@ void Server::handleJoin(const Message &msg, Client &client)
 		}
 
 	}
-
-	// if canale non esiste -> Channel.create(client)
-
-	// a quesot punto canale esiste per forza -> Channel.handleJoin(client)
+	
+	Channel *channel = getChannelByName(channelName);
+	if (channel == NULL)
+		createChannel(channelName);
+	
+		/*JOIN CHANNEL*/
+		// check if password protected and if password param is correct
+		// check if invite only and if client is invited
+		// check if channel is full (users limit)
+		// accept client and send JOIN message to channel members (everyone, also sender)
 }
 
 /* ------------------------------------ Channel ----------------------------------- */
