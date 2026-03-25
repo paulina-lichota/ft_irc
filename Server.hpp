@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/25 17:20:55 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/25 18:20:55 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,8 @@ class Server {
 		// Channels
 		void printChannels();
 		Channel* getChannelByName(const std::string &name); // ritorna NULL se non esiste
+		void createChannel(const std::string &name);
+		void broadcastMessageToChannel(const std::string &message, const Channel &channel, const Client &sender); // invia message a tutti i client del canale tranne sender
 
 		int	join(const Message &msg, const Client &client);	// aggiunge un client al canale, se il canale è protetto da password, client deve fornire la password corretta
 		// void kick(Client client);		  // kick un client dal canale
@@ -61,7 +63,6 @@ class Server {
 		/*
 			All the messages sent from one client to a channel have to be forwarded to every other client that joined the channel.
 		*/
-		void broadcastMessageToChannel(const std::string &message, const Channel &channel, const Client &sender); // invia message a tutti i client del canale tranne sender
 
 		// Dispatcher
 		void initActions();

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/25 17:22:20 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/25 18:26:18 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -372,6 +372,13 @@ void Server::printChannels()
 {
 	for (size_t i = 0; i < _channels.size(); i++)
 		_channels[i].printChannelInfo();
+}
+
+void Server::createChannel(const std::string &name)
+{
+	if (getChannelByName(name) != NULL)
+		return ;
+	_channels.push_back(Channel(name));
 }
 
 /* ------------------------------------ Utils ----------------------------------- */
