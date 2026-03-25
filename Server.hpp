@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/25 19:04:39 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/25 20:06:59 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ class Server {
 		// Static methods:
 		static bool isValidPort(const std::string &port);
 		static bool isValidPassword(const std::string &password);
+		static bool isValidNickname(const std::string &nickname);
 
 		// Channels
 		void printChannels();
@@ -59,7 +60,6 @@ class Server {
 		// invia message a tutti i client del canale tranne toExclude. sender già dentro la stringa
 		void broadcastMessageToChannel(const std::string &message, const Channel &channel, const std::string &toExclude);
 
-		int	join(const Message &msg, const Client &client);	// aggiunge un client al canale, se il canale è protetto da password, client deve fornire la password corretta
 		// void kick(Client client);		  // kick un client dal canale
 		// void invite(Client client);		  // invita un client al canale
 	

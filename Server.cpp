@@ -6,13 +6,14 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/25 19:16:30 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/25 20:14:09 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 #include "Message.hpp"
 #include "signal.hpp"
+#include <cctype> // isspace()
 
 /*
 ** Inizializza il server: crea il socket, lo configura e lo mette in ascolto.
@@ -504,21 +505,21 @@ bool	Server::isValidPassword(const std::string &password) {
 	return (true);
 }
 
-// int	Server::join(const Message &msg, const Client &client)
-// {
-// 	size_t		i = 0;
-// 	if (msg.getParams().size() > 1)
-// 		Server::sendMessageToClient(client.getFd(), "461 " + client.getNickname() + " " + msg.getCommand() + " :Not enough parameters"); //ERR_BADCHANMASK se non vogliamo gestire gli spazzi
-// 	std::string channels = msg.getParams()[0];
-// 	while (!channels.empty()) {
-// 		if (channels[0] != '#') {
-// 			Server::sendMessageToClient(client.getFd(), "403 " + client.getNickname() + " " + msg.getCommand() + " :No such channel"); //ERR_NOSUCHCHANNEL deve iniziare con # channel
-// 		}
-// 		size_t pos = channels.find(',');
-// 		std::string channel = channels.substr(0, pos); //estraggo il channel
-// 		/*if (!channe.exist(channel))
-// 			Server::sendMessageToClient(client.getFd(), "403 " + client.getNickname() + " " + msg.getCommand() + " :No such channel");
-// 		*/
-// 		channels = channels.substr(pos + 1);
-// 	}
-// }
+/*
+	Non può iniziare con un numero
+	Non può iniziare con # o & (sono prefissi di canale) o con : (è il prefisso dei messaggi IRC)
+	Non può contenere spazi, \r \n  ,  *  ? (sono caratteri speciali del protocollo)
+	Non può essere vuoto
+*/
+bool Server::isValidNickname(const std::string &nickname) {
+    if (nickname.empty() || nickname.length() > 9)
+        return false;
+    if (std::isdigit(nickname[0]) || nickname[0] == '#' || nickname[0] == '&' || nickname[0] == ':')
+        return false;
+    for (size_t i = 0; i < nickname.length(); i++) {
+        if (isspace(nickname[i]) || nickname[i] == ',' || nickname[i] == '*' 
+            || nickname[i] == '?' || nickname[i] == '\r' || nickname[i] == '\n')
+            return false;
+    }
+    return true;
+}

@@ -28,12 +28,12 @@
 - [X] NICK + check nickname uniqueness
 - [X] USER
 - [X] Welcome messages (001 002 003 004)
-- [ ] PING / PONG
+- [X] PING / PONG
 - [ ] QUIT
 
 ## Fase 3 — Canali
-- [ ] Classe Channel — attributi base
-- [ ] JOIN
+- [X] Classe Channel — attributi base
+- [x] JOIN
 - [ ] PART
 - [ ] PRIVMSG (canale)
 - [ ] PRIVMSG (privato)
@@ -59,6 +59,10 @@
 - [ ] Test errori numerici
 
 ## TO  FIX:
+
+- [] NICK: se nick già registrato e cambio nick → notifica il client e tutti i canali in cui si trova
+- [] NICK: aggiungere isValidNickname (esiste già)
+
 
 Unknown command: CAP
 Received from client fd 4: QUIT :Leaving
