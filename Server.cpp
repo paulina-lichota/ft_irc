@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/25 12:56:03 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/25 12:58:43 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -177,14 +177,15 @@ bool Server::handleClientMessage(size_t index) {
 
 /* ------------------------------------ Dispatcher ----------------------------------- */
 
-// non posso scrivere solo &handleJoin o simili
+// non posso scrivere solo &handleJoin
 void Server::initActions()
 {
 	_actions["PASS"] = &Server::handlePass;
 	_actions["NICK"] = &Server::handleNick;
 	_actions["USER"] = &Server::handleUser;
+	_actions["PING"] = &Server::handlePing;
+	// AGGIORNARE MAN MANO
 }
-
 void Server::dispatchAction(const Message &msg, Client &client)
 {
 	if (!msg.isValid())
@@ -270,6 +271,22 @@ void Server::handleUser(const Message &msg, Client &client) {
 		client.setRegistered(true);
 		sendWelcomeMessage(client);
 	}
+}
+
+// es. client manda "PONG :123"
+//     server risponde "PONG :123"
+// no params -> ERR_NOORIGIN
+// max 2 params -> se più di 2, ignora quelli extra
+void Server::handlePing(const Message &msg, Client &client)
+{
+	if (msg.getParams().empty()) {
+		sendMessageToClient(client.getFd(), "409 :No origin specified"); // ERR_NOORIGIN
+		return;
+	}
+	std::string message = "PONG " + msg.getParams()[0];
+	if (msg.getParams().size() > 1)
+		message += " " + msg.getParams()[1];
+	sendMessageToClient(client.getFd(), message);
 }
 
 /* ------------------------------------ Utils ----------------------------------- */
