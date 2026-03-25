@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/25 19:06:31 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/25 19:16:30 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -336,7 +336,7 @@ void Server::handleJoin(const Message &msg, Client &client)
 		channel = getChannelByName(channelName);
 	}
 
-	// channel password param
+	// se channel protetto da key
 	if (channel->getKey().size() > 0)
 	{
 		// prendo secondo param
@@ -350,7 +350,7 @@ void Server::handleJoin(const Message &msg, Client &client)
 		}
 	}
 
-	// già membro (non può essere aggiunto)
+	// già membro del canale
 	if (channel->isMember(client.getNickname()))
 		return;
 
@@ -367,14 +367,18 @@ void Server::handleJoin(const Message &msg, Client &client)
 			return;
 	}
 	
+	// aggiungo come membro
 	channel->addMember(client.getNickname());
-    if (channel->getMemberCount() == 1)
-        channel->addOperator(client.getNickname());
-    if (channel->isInvited(client.getNickname()))
-        channel->removeInvited(client.getNickname());
+	// setto operatore
+	if (channel->getMemberCount() == 1)
+			channel->addOperator(client.getNickname());
+	// aggiorna invited se è invitato
+	if (channel->isInvited(client.getNickname()))
+			channel->removeInvited(client.getNickname());
 
 	// broadcast message di JOIN a tutti i membri del canale (compreso il nuovo membro)
-
+	const std::string message = ":" + client.getNickname() + " JOIN " + channelName; // da formattare meglio i messaggi
+	broadcastMessageToChannel(message, *channel, "");
 }
 
 /* ------------------------------------ Channel ----------------------------------- */
