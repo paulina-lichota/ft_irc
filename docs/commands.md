@@ -92,6 +92,7 @@ PING e PONG servono per mantenere viva la connessione. HexChat li manda automati
 | `462` | ERR_ALREADYREGISTRED | Già registrato |
 | `464` | ERR_PASSWDMISMATCH | Password errata |
 | `471` | ERR_CHANNELISFULL | Canale pieno (mode +l) |
+| `472` | ERR_UNKNOWNMODE | mode canale non riconosciuta |
 | `473` | ERR_INVITEONLYCHAN | Canale invite-only (mode +i) |
 | `475` | ERR_BADCHANNELKEY | Password canale errata (mode +k) |
 | `482` | ERR_CHANOPRIVSNEEDED | Non sei operatore del canale |

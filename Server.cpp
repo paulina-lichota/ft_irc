@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/26 19:28:11 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/26 19:34:48 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -676,26 +676,7 @@ void Server::applyMode(const Message &msg, Channel &channel, Client &client)
 			continue;
 		}
 		
-		if (mode[i] == 'o')
-		{
-			// manca parametro
-			if (paramIndex >= msg.getParams().size()) {
-				sendMessageToClient(client.getFd(), ":" + _name + " 461 " + client.getNickname() + " MODE :Not enough parameters\r\n");
-				continue; // salta alla prossima iterazione del for
-			}
-			if (!channel.isMember(msg.getParams()[paramIndex])) {
-				sendMessageToClient(client.getFd(), ":" + _name + " 441 " + msg.getParams()[paramIndex] + " " + channel.getName() + " :They aren't on that channel\r\n");
-				paramIndex++; // anche se il membro non è nel canale, devo comunque usare il parametro
-				continue; // salta alla prossima iterazione del for
-			}
-			std::string member = msg.getParams()[paramIndex];
-			paramIndex++;
-			if (adding)
-				channel.addOperator(member);
-			else
-				channel.removeOperator(member);
-		}
-		else if (mode[i] == 'i')
+	 	if (mode[i] == 'i')
 		{
 			channel.setInviteOnly(adding);
 		}
@@ -726,12 +707,13 @@ void Server::applyMode(const Message &msg, Channel &channel, Client &client)
 					sendMessageToClient(client.getFd(), ":" + _name + " 461 " + client.getNickname() + " MODE :Not enough parameters\r\n");
 					continue;
 				}
-				size_t limit = atoi(msg.getParams()[paramIndex].c_str());
+				std::string limitstr = msg.getParams()[paramIndex];
 				paramIndex++;
-				if (!channel.isValidLimit(msg.getParams()[paramIndex])) {
+				if (!channel.isValidLimit(limitstr)) {
 					sendMessageToClient(client.getFd(), ":" + _name + " 461 " + client.getNickname() + " MODE :Not enough parameters\r\n");
 					continue;
 				}
+				size_t limit = atoi(limitstr.c_str());
 				channel.setUsersLimit(limit);
 			}
 			else
@@ -739,9 +721,28 @@ void Server::applyMode(const Message &msg, Channel &channel, Client &client)
 				channel.setUsersLimit(0);
 			}
 		}
+		else if (mode[i] == 'o')
+		{
+			// manca parametro
+			if (paramIndex >= msg.getParams().size()) {
+				sendMessageToClient(client.getFd(), ":" + _name + " 461 " + client.getNickname() + " MODE :Not enough parameters\r\n");
+				continue; // salta alla prossima iterazione del for
+			}
+			if (!channel.isMember(msg.getParams()[paramIndex])) {
+				sendMessageToClient(client.getFd(), ":" + _name + " 441 " + msg.getParams()[paramIndex] + " " + channel.getName() + " :They aren't on that channel\r\n");
+				paramIndex++; // anche se il membro non è nel canale, devo comunque usare il parametro
+				continue; // salta alla prossima iterazione del for
+			}
+			std::string member = msg.getParams()[paramIndex];
+			paramIndex++;
+			if (adding)
+				channel.addOperator(member);
+			else
+				channel.removeOperator(member);
+		}
 		else
 		{
-			sendMessageToClient(client.getFd(), ":" + _name + " 501 " + client.getNickname() + " :Unknown MODE flag");
+			sendMessageToClient(client.getFd(), ":" + _name + " 472 " + client.getNickname() + " :Unknown MODE flag");
 			return ;
 		}
 	}
