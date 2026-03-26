@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/22 16:24:21 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/25 19:10:40 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/26 14:51:40 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,6 +73,12 @@ const std::string& Client::getNickname() const { return (_nickname); }
 const std::string& Client::getUsername() const { return (_username); }
 
 const std::string& Client::getHostname() const { return (_hostname); }
+
+const std::string& Client::getPrefix() const {
+	static std::string prefix;
+	prefix = ":" + _nickname + "!" + _username + "@" + _hostname;
+	return (prefix);
+}
 
 /* ------------------------------------ Setters ----------------------------------- */
 

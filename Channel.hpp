@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/24 17:55:39 by plichota          #+#    #+#             */
-/*   Updated: 2026/03/26 02:45:20 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/26 13:20:36 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ class Channel
 		size_t getUsersLimit() const;
 		void setUsersLimit(size_t limit); // only op
 
-		std::string getModes() const;
+		std::string getModes() const; // TODO test
 
 		// Membri
 		void addMember(const std::string &nickname);

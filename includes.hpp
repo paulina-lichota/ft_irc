@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:17:58 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/25 17:04:20 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/26 16:32:41 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,8 @@
 # include <cerrno> // errno
 # include <arpa/inet.h> // inet_ntoa()
 # include <set> // std::set
+# include <cctype> // isspace()
+
 
 # define GREEN   	"\033[0;32m"
 # define YELLOW  	"\033[0;33m"

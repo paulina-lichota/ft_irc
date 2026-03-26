@@ -6,7 +6,7 @@
 /*   By: francema <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/26 17:00:19 by francema         ###   ########.fr       */
+/*   Updated: 2026/03/26 17:14:26 by francema         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 #include "Client.hpp"
 #include "Message.hpp"
 #include "signal.hpp"
-#include <cctype> // isspace()
 
 /*
 ** Inizializza il server: crea il socket, lo configura e lo mette in ascolto.
@@ -358,18 +357,40 @@ void Server::handlePing(const Message &msg, Client &client)
 	sendMessageToClient(client.getFd(), message);
 }
 
+/*
+** Gestisce il comando QUIT: il client vuole disconnettersi volontariamente.
+**
+** La disconnessione "pulita" tramite QUIT è diversa da una disconnessione
+** brusca (recv() == 0 o POLLHUP): in questo caso il client manda esplicitamente
+** il comando, quindi il server deve prima notificare tutti i canali coinvolti
+** e poi chiudere la connessione.
+**
+** Sequenza:
+**   1. Costruisce il messaggio QUIT con il prefix completo nick!user@host
+**      e il quit message (trailing del comando, oppure "Client quit" di default)
+**   2. Broadcast del messaggio a tutti i canali di cui il client è membro,
+**      escludendo il client stesso (che riceverà il suo messaggio al passo 3)
+**   3. Invia il messaggio QUIT anche al client che ha mandato il comando
+**      (HexChat si aspetta di ricevere il proprio QUIT prima che la connessione chiuda)
+**   4. Chiama handleClientDisconnection() che fa il cleanup: rimuove il client
+**      dai canali, chiude il fd, rimuove da _clients e _pollFds
+*/
 void Server::handleQuit(const Message &msg, Client &client) {
-	std::string quitMessage = ":" + client.getNickname() + "!" + client.getUsername() + "@" + client.getHostname() + " QUIT :" + (msg.hasTrailing() ? msg.getTrailing() : "Client quit");
+	std::string quitMsg = "Client quit";
+	if (msg.hasTrailing())
+		quitMsg = msg.getTrailing();
 
-	// broadcast ai canali prima di rimuovere
+	std::string quitMessage = client.getPrefix() + " QUIT :" + quitMsg;
+
 	for (size_t i = 0; i < _channels.size(); i++) {
 		if (_channels[i].isMember(client.getNickname()))
 			broadcastMessageToChannel(quitMessage, _channels[i], client.getNickname());
 	}
 	sendMessageToClient(client.getFd(), quitMessage);
 	std::cout << "[fd:" << client.getFd() << "] QUIT" << std::endl;
-	handleClientDisconnection(pollfdIndexByFd(client.getFd()));
-}
+	size_t idx = pollfdIndexByFd(client.getFd());
+	if (idx < _pollFds.size())
+		handleClientDisconnection(idx);}
 
 // es. client manda "JOIN #channel"
 //     server risponde "JOIN #channel"
@@ -444,8 +465,18 @@ void Server::handleJoin(const Message &msg, Client &client)
 			channel->removeInvited(client.getNickname());
 
 	// broadcast message di JOIN a tutti i membri del canale (compreso il nuovo membro)
-	const std::string message = ":" + client.getNickname() + " JOIN " + channelName; // da formattare meglio i messaggi
+	const std::string message = client.getPrefix() + " JOIN " + channelName; // da formattare meglio i messaggi
 	broadcastMessageToChannel(message, *channel, "");
+	std::string namesList = "";
+	const std::set<std::string> &members = channel->getMembers();
+	for (std::set<std::string>::const_iterator it = members.begin(); it != members.end(); ++it)
+	{
+		if (channel->isOperator(*it))
+			namesList += "@";
+		namesList += *it + " ";
+	}
+	sendMessageToClient(client.getFd(), ":" + _name + " 353 " + client.getNickname() + " = " + channelName + " :" + namesList);
+	sendMessageToClient(client.getFd(), ":" + _name + " 366 " + client.getNickname() + " " + channelName + " :End of /NAMES list");
 }
 
 
@@ -475,7 +506,7 @@ void Server::handlePrivmsg(const Message &msg, Client &client)
 			sendMessageToClient(client.getFd(), ":" + _name + " 412 " + client.getNickname() + " :No text to send\r\n");
 			return ;
 		}
-		std::string message = ":" + client.getNickname() + " PRIVMSG " + target + " :" + msg.getTrailing();
+		std::string message = client.getPrefix() + " PRIVMSG " + target + " :" + msg.getTrailing();
 		broadcastMessageToChannel(message, *channel, client.getNickname());
 	}
 	// ===================== NICK =====================
@@ -489,7 +520,7 @@ void Server::handlePrivmsg(const Message &msg, Client &client)
 			sendMessageToClient(client.getFd(), ":" + _name + " 412 " + client.getNickname() + " :No text to send\r\n");
 			return ;
 		}
-		std::string message = ":" + client.getNickname() + " PRIVMSG " + target + " :" + msg.getTrailing();
+		std::string message = client.getPrefix() + " PRIVMSG " + target + " :" + msg.getTrailing();
 		sendMessageToClient(targetFd, message);
 	}
 }
@@ -537,7 +568,7 @@ void Server::handleTopic(const Message &msg, Client &client)
 
 	// altri casi: puoi cambiarlo se non è topic restricted, o se sei operatore anche se è topic restricted
 	channel->setTopic(msg.getTrailing());
-	broadcastMessageToChannel(":" + client.getNickname() + " TOPIC " + channelName + " :" + msg.getTrailing(), *channel, "");
+	broadcastMessageToChannel(client.getPrefix() + " TOPIC " + channelName + " :" + msg.getTrailing(), *channel, "");
 }
 
 void Server::handleMode(const Message &msg, Client &client)
@@ -573,7 +604,22 @@ void Server::handleMode(const Message &msg, Client &client)
 		return ;
 	}
 
+	// se non sei operatore non puoi fare altro
+	if (!channel->isOperator(client.getNickname()))
+	{
+		sendMessageToClient(client.getFd(), "482 " + channelName + " :You're not channel operator");
+		return ;
+	}
+
 	// SET MODE
+	// se non inizia con + o - è sbagliato
+	std::string mode = msg.getParams()[1];
+	if (!(mode[0] == '+' || mode[0] == '-')) {
+		sendMessageToClient(client.getFd(), ":" + _name + " 461 " + msg.getCommand() + " :Invalid mode flag");
+		return ;
+	}
+
+	// handleMode(mode, channel, client);
 }
 
 /* ------------------------------------ Operator actions ----------------------------------- */
@@ -611,7 +657,7 @@ void Server::handleKick(const Message &msg, Client &client) {
 		return ;
 	}
 	// remove target client from channel and send KICK message to channel members (everyone, also sender)
-	std::string kickMessage = ":" + client.getNickname() + " KICK " + channelName + " " + targetNickname;
+	std::string kickMessage = client.getPrefix() + " KICK " + channelName + " " + targetNickname;
 	if (!msg.getTrailing().empty())
 		kickMessage += " :" + msg.getTrailing();
 	broadcastMessageToChannel(kickMessage, *channel, "");
@@ -717,6 +763,7 @@ void Server::addPollFd(int fd) {
 }
 
 void Server::sendMessageToClient(int fd, const std::string &message) {
+	std::cout << BLUE << "[fd:" << fd << "] Sending: " << message << RESET << std::endl;
 	std::string msgWithCRLF = message + "\r\n";
 	const char *data = msgWithCRLF.c_str();
 	size_t total = msgWithCRLF.size();
