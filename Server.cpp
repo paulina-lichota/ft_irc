@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/26 02:48:58 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/26 09:29:40 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -172,25 +172,21 @@ void Server::handleClientDisconnection(size_t index) {
 ** Ritorna false se il client si è disconnesso, true altrimenti.
 */
 bool Server::handleClientMessage(size_t index) {
+	int fd = _pollFds[index].fd;  // salva fd subito
 	char s_buffer[IRC_MSG_MAX_LEN];
-	int n = recv(_pollFds[index].fd, s_buffer, sizeof(s_buffer) - 1, 0);
+	int n = recv(fd, s_buffer, sizeof(s_buffer) - 1, 0);
 	if (n <= 0) {
 		handleClientDisconnection(index);
 		return (false);
 	}
-	_clients[_pollFds[index].fd].appendToBuffer(std::string(s_buffer, n));
+	_clients[fd].appendToBuffer(std::string(s_buffer, n));
 	std::string message;
-	while (!(message = _clients[_pollFds[index].fd].extractMessageFromBuffer()).empty()) {
-		// std::cout << "Complete message: " << message << std::endl;
+	while (!(message = _clients[fd].extractMessageFromBuffer()).empty()) {
 		Message msg(message);
-		std::cout << "[fd:" << _pollFds[index].fd << "] " << msg.getCommand() << std::endl;
-		// std::cout << "Parsed message - Prefix: " << msg.getPrefix() << ", Command: " << msg.getCommand() << ", Params: ";
-		// for (size_t i = 0; i < msg.getParams().size(); i++) {
-		// 	std::cout << "[" << msg.getParams()[i] << "]";
-		// }
-		// std::cout << ", Trailing: " << msg.getTrailing();
-		// std::cout << std::endl;
-		dispatchAction(msg, _clients[_pollFds[index].fd]); // dispatch del messaggio al dispatcher, che processa il comando e invia eventuali risposte
+		std::cout << "[fd:" << fd << "] " << msg.getCommand() << std::endl;
+		dispatchAction(msg, _clients[fd]);
+		if (_clients.find(fd) == _clients.end())  // QUIT ha rimosso il client
+			return (false);
 	}
 	return (true);
 }
@@ -207,9 +203,9 @@ void Server::initActions()
 	_actions["PRIVMSG"] = &Server::handlePrivmsg;
 	_actions["TOPIC"] = &Server::handleTopic;
 	_actions["MODE"] = &Server::handleMode;
-	// _actions["KICK"] = &Server::handleKick;
+	_actions["KICK"] = &Server::handleKick;
+	_actions["QUIT"] = &Server::handleQuit; // gestisce anche il caso in cui il client si disconnette senza inviare QUIT, ma semplicemente chiudendo la connessione
 	// _actions["INVITE"] = &Server::handleInvite;
-	// aggiungere
 	// AGGIORNARE MAN MANO
 }
 
@@ -356,6 +352,18 @@ void Server::handlePing(const Message &msg, Client &client)
 	sendMessageToClient(client.getFd(), message);
 }
 
+void Server::handleQuit(const Message &msg, Client &client) {
+	std::string quitMessage = ":" + client.getNickname() + "!" + client.getUsername() + "@" + client.getHostname() + " QUIT :" + (msg.hasTrailing() ? msg.getTrailing() : "Client quit");
+
+	// broadcast ai canali prima di rimuovere
+	for (size_t i = 0; i < _channels.size(); i++) {
+		if (_channels[i].isMember(client.getNickname()))
+			broadcastMessageToChannel(quitMessage, _channels[i], client.getNickname());
+	}
+	sendMessageToClient(client.getFd(), quitMessage);
+	std::cout << "[fd:" << client.getFd() << "] QUIT" << std::endl;
+	handleClientDisconnection(pollfdIndexByFd(client.getFd()));
+}
 
 // es. client manda "JOIN #channel"
 //     server risponde "JOIN #channel"

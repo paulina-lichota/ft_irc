@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/26 01:57:20 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/26 09:25:48 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,6 +79,7 @@ class Server {
 		void handleNick(const Message &msg, Client &client);
 		void handleUser(const Message &msg, Client &client);
 		void handlePing(const Message &msg, Client &client);
+		void handleQuit(const Message &msg, Client &client);
 		void handleJoin(const Message &msg, Client &client);
 		void handlePrivmsg(const Message &msg, Client &client);
 		void handleTopic(const Message &msg, Client &client);
