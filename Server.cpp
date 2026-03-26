@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/26 14:54:42 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/26 15:18:40 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -466,6 +466,16 @@ void Server::handleJoin(const Message &msg, Client &client)
 	// broadcast message di JOIN a tutti i membri del canale (compreso il nuovo membro)
 	const std::string message = ":" + client.getNickname() + " JOIN " + channelName; // da formattare meglio i messaggi
 	broadcastMessageToChannel(message, *channel, "");
+	std::string namesList = "";
+	const std::set<std::string> &members = channel->getMembers();
+	for (std::set<std::string>::const_iterator it = members.begin(); it != members.end(); ++it)
+	{
+		if (channel->isOperator(*it))
+			namesList += "@";
+		namesList += *it + " ";
+	}
+	sendMessageToClient(client.getFd(), ":" + _name + " 353 " + client.getNickname() + " = " + channelName + " :" + namesList);
+	sendMessageToClient(client.getFd(), ":" + _name + " 366 " + client.getNickname() + " " + channelName + " :End of /NAMES list");
 }
 
 
@@ -713,6 +723,7 @@ void Server::addPollFd(int fd) {
 }
 
 void Server::sendMessageToClient(int fd, const std::string &message) {
+	std::cout << BLUE << "[fd:" << fd << "] Sending: " << message << RESET << std::endl;
 	std::string msgWithCRLF = message + "\r\n";
 	const char *data = msgWithCRLF.c_str();
 	size_t total = msgWithCRLF.size();
