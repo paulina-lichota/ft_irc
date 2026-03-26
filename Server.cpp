@@ -6,7 +6,7 @@
 /*   By: francema <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/26 18:58:07 by francema         ###   ########.fr       */
+/*   Updated: 2026/03/26 19:10:57 by francema         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,29 +105,29 @@ void	Server::run(){
 	}
 }
 
-void Server::log(LogType type, const Client* client, const std::string& msg) {
-std::string prefix;
+// void Server::log(LogType type, const Client* client, const std::string& msg) {
+// std::string prefix;
 
-	// Tipo log
-	switch (type) {
-		case LOG_IN:     prefix = "[IN]"; break;
-		case LOG_OUT:    prefix = "[OUT]"; break;
-		case LOG_SERVER: prefix = "[SERVER]"; break;
-		case LOG_DEBUG:  prefix = "[DEBUG]"; break;
-	}
+// 	// Tipo log
+// 	switch (type) {
+// 		case LOG_IN:     prefix = "[IN]"; break;
+// 		case LOG_OUT:    prefix = "[OUT]"; break;
+// 		case LOG_SERVER: prefix = "[SERVER]"; break;
+// 		case LOG_DEBUG:  prefix = "[DEBUG]"; break;
+// 	}
 
-	// Info client
-	std::string clientInfo = "[fd:?]";
-	std::string identity;
+// 	// Info client
+// 	std::string clientInfo = "[fd:?]";
+// 	std::string identity;
 
-	if (client) {
-		clientInfo = "[fd:" + std::to_string(client->getFd()) + "]";
-		if (!client->getNickname().empty())
-			identity = "[" + client->getPrefix() + "]";
-	}
+// 	if (client) {
+// 		clientInfo = "[fd:" + std::to_string(client->getFd()) + "]";
+// 		if (!client->getNickname().empty())
+// 			identity = "[" + client->getPrefix() + "]";
+// 	}
 
-	std::cout << clientInfo << prefix << identity << " " << msg << std::endl;
-}
+// 	std::cout << clientInfo << prefix << identity << " " << msg << std::endl;
+// }
 /* ------------------------------------ Handlers ----------------------------------- */
 
 /*
