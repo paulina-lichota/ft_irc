@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/24 17:18:44 by plichota          #+#    #+#             */
-/*   Updated: 2026/03/24 20:26:23 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/26 01:06:50 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ private:
 	std::string					_prefix;
 	std::string					_command;
 	std::vector<std::string>	_params;
+	bool                  _hasTrailing;
 	std::string					_trailing; // parte finale del messaggio dopo i parametri, inizia con ':' e può contenere spazi, es. :message text with spaces
 	bool						_valid;
 	std::string					_error;
@@ -36,6 +37,7 @@ public:
 	bool							isValid()		const;
 	const std::string&				getError()		const;
 	const std::string&				getTrailing()	const;
+	const bool Message::hasTrailing() const;
 };
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/24 17:55:39 by plichota          #+#    #+#             */
-/*   Updated: 2026/03/25 15:27:44 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/26 00:28:53 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@
 class Channel
 {
 	private:
-		const std::string	_name; // immutabile
+		std::string	_name; // immutabile
 		std::string	_topic;
 		std::string	_key; 	// empty = no password
 		bool	_inviteOnly;	// +i: solo operatori possono invitare nuovi client, se un client prova ad unirsi senza essere stato invitato, ERR 473

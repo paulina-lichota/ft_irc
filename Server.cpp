@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/25 22:43:57 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/26 01:02:31 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -482,21 +482,49 @@ void Server::handlePrivmsg(const Message &msg, Client &client)
 //     server risponde "TOPIC #channel :topic"
 void Server::handleTopic(const Message &msg, Client &client)
 {
-	// se manca argomento canale [1]
-	//  errore argomento mancante
-	// controlla che canale esista
-	// controlla che user sia membro del canale
+	std::cout << msg.getParams().size() << " params, trailing: [" << msg.getTrailing() << "]" << std::endl;
 
+	// es. TOPIC
+	if (msg.getParams().empty()) {
+		sendMessageToClient(client.getFd(), "461 " + msg.getCommand() + " :Not enough parameters");
+		return ;
+	}
+
+	// es. "TOPIC notachannel"
+	std::string channelName = msg.getParams()[0];
+	Channel *channel = getChannelByName(channelName);
+	if (channel == NULL) {
+		sendMessageToClient(client.getFd(), "403 " + msg.getCommand() + " :No such channel");
+		return ;
+	}
+
+	// es "TOPIC #channel"
+	// Chiunque può leggere il topic del canale anche se non è membro (i canali privati non sono presenti)
+	if (msg.getParams().size() == 1 && msg.getTrailing().empty())
+	{
+    if (channel->getTopic().empty())
+        sendMessageToClient(client.getFd(), ":" + _name + " 331 " + client.getNickname() + " " + channelName + " :No topic is set");
+    else
+        sendMessageToClient(client.getFd(), ":" + _name + " 332 " + client.getNickname() + " " + channelName + " :" + channel->getTopic());
+    return;
+	}
+
+	if (msg.getParams().size() == 1 && msg.getTrailing().empty()) {}
 	// se manca argomento topic [2] LETTURA
 	//  topic esiste → manda 332 col topic
 	//  topic non esiste → manda 331 "No topic is set"
 	//  return
 	//  errore argomento mancante
 	
+	// controlla che user sia membro del canale
+
 	// se c'è trailing → IMPOSTAZIONE
 	// se _topicRestricted = true controlla che client isOperator
 	// se non lo è return  errore 482
 
+	// es. "TOPIC #channel :"
+
+	// es. "TOPIC #channel :New topic"
 	// a questo punto il client o è operatore o non è restricted
 	// cambia topic
 	//  manda broadcast ( trailing vuoto se c'è : senza nulla dopo)
