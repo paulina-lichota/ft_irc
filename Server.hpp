@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/25 22:29:33 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/26 01:57:20 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,8 +66,6 @@ class Server {
 		// invia message a tutti i client del canale tranne toExclude. sender già dentro la stringa
 		void broadcastMessageToChannel(const std::string &message, const Channel &channel, const std::string &toExclude);
 
-		void	privmsg(const Message& msg, const Client& client);
-
 		/*
 		All the messages sent from one client to a channel have to be forwarded to every other client that joined the channel.
 		*/
@@ -84,6 +82,7 @@ class Server {
 		void handleJoin(const Message &msg, Client &client);
 		void handlePrivmsg(const Message &msg, Client &client);
 		void handleTopic(const Message &msg, Client &client);
+		void handleMode(const Message &msg, Client &client);
 		// Operator actions:
 		void handleKick(const Message &msg, Client &client);
 		// void handleInvite(const Message &msg, Client &client); // invita un client al can

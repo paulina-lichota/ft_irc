@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/26 01:49:52 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/26 02:48:58 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -206,6 +206,7 @@ void Server::initActions()
 	_actions["JOIN"] = &Server::handleJoin;
 	_actions["PRIVMSG"] = &Server::handlePrivmsg;
 	_actions["TOPIC"] = &Server::handleTopic;
+	_actions["MODE"] = &Server::handleMode;
 	// _actions["KICK"] = &Server::handleKick;
 	// _actions["INVITE"] = &Server::handleInvite;
 	// aggiungere
@@ -519,6 +520,42 @@ void Server::handleTopic(const Message &msg, Client &client)
 	// altri casi: puoi cambiarlo se non è topic restricted, o se sei operatore anche se è topic restricted
 	channel->setTopic(msg.getTrailing());
 	broadcastMessageToChannel(":" + client.getNickname() + " TOPIC " + channelName + " :" + msg.getTrailing(), *channel, "");
+}
+
+void Server::handleMode(const Message &msg, Client &client)
+{
+	std::cout << msg.getParams().size() << " params, hasTrailing: " << msg.hasTrailing() << ", trailing: [" << msg.getTrailing() << "]" << std::endl;
+
+	// es. MODE
+	if (msg.getParams().empty()) {
+		sendMessageToClient(client.getFd(), ":" + _name + " 461 " + msg.getCommand() + " :Not enough parameters");
+		return ;
+	}
+
+	// es. "MODE notachannel"
+	std::string channelName = msg.getParams()[0];
+	Channel *channel = getChannelByName(channelName);
+	if (channel == NULL) {
+		sendMessageToClient(client.getFd(), ":" + _name + " 403 " + msg.getCommand() + " :No such channel");
+		return ;
+	}
+
+	// se non sei membro non puoi fare niente
+	if (!channel->isMember(client.getNickname()))
+	{
+		sendMessageToClient(client.getFd(), "442 " + channelName + " :You're not on that channel");
+		return ;
+	}
+
+	// es. "MODE #channel"
+	std::string modes = channel->getModes(); // i, t, k, l.  Invece 'o' non è del canale
+	if (msg.getParams().size() == 1)
+	{
+		sendMessageToClient(client.getFd(), ":" + _name + " 324 " + client.getNickname() + " " + channelName + " " + modes);
+		return ;
+	}
+
+	// SET MODE
 }
 
 /* ------------------------------------ Operator actions ----------------------------------- */

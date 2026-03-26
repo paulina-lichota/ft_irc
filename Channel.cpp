@@ -6,11 +6,12 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/24 17:56:28 by plichota          #+#    #+#             */
-/*   Updated: 2026/03/26 00:28:09 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/26 02:45:12 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Channel.hpp"
+#include <sstream>
 
 Channel::Channel(const std::string &name): 
     _name(name),
@@ -82,6 +83,26 @@ size_t Channel::getUsersLimit() const
 void Channel::setUsersLimit(size_t limit)
 {
     this->_usersLimit = limit;
+}
+
+// "+"           → nessun mode attivo
+std::string Channel::getModes() const
+{
+    std::string modes = "+";
+    if (_inviteOnly)
+        modes += "i";
+    if (_topicRestricted)
+        modes += "t";
+    if (_key.size() > 0)
+        modes += "k";
+    if (_usersLimit > 0)
+    {
+        modes += "l";
+        std::stringstream ss;
+        ss << _usersLimit;
+        modes += " " + ss.str();
+    }
+    return modes;
 }
 
 /* ------------------------------------ Members ----------------------------------- */

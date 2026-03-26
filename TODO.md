@@ -36,13 +36,14 @@
 - [X] Classe Channel — attributi base
 - [X] JOIN
 - [X] PRIVMSG (canale)
-- [ ] TOPIC (lettura)
+- [X] TOPIC (lettura)
 
 ## Fase 4 — Operatori
 - [.] KICK //wip caro
 - [ ] INVITE
 - [ ] Test con nc — messaggi parziali
-- [ ] TOPIC (modifica)
+- [X] TOPIC (modifica)
+- [ ] MODE (lettura)
 - [ ] MODE +i
 - [ ] MODE +t
 - [ ] MODE +k
