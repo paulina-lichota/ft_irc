@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: francema <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/26 12:48:44 by francema         ###   ########.fr       */
+/*   Updated: 2026/03/26 17:31:57 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,6 +63,7 @@ class Server {
 		/*
 		All the messages sent from one client to a channel have to be forwarded to every other client that joined the channel.
 		*/
+		void handleMode(const std::string &mode, Channel &channel, Client &client);
 
 		// Dispatcher
 		void initActions();
@@ -77,10 +78,10 @@ class Server {
 		void handleJoin(const Message &msg, Client &client);
 		void handlePrivmsg(const Message &msg, Client &client);
 		void handleTopic(const Message &msg, Client &client);
-		void handleMode(const Message &msg, Client &client);
 		// Operator actions:
 		void handleKick(const Message &msg, Client &client);
 		void handleInvite(const Message &msg, Client &client); // invita un client al can
+
 };
 
 #endif

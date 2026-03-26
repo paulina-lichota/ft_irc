@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/26 17:36:22 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/26 17:39:05 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -619,7 +619,14 @@ void Server::handleMode(const Message &msg, Client &client)
 		return ;
 	}
 
-	// handleMode(mode, channel, client);
+	handleMode(mode, *channel, client);
+}
+
+void Server::handleMode(const std::string &mode, Channel &channel, Client &client)
+{
+	(void)	mode;
+	(void)	channel;
+	(void)	client;
 }
 
 /* ------------------------------------ Operator actions ----------------------------------- */
@@ -701,7 +708,7 @@ void Server::handleInvite(const Message &msg, Client &client)
 		sendMessageToClient(client.getFd(), ":" + _name + " " + msg.getParams()[0] + " 443 " + msg.getParams()[1] + " :is already on channel");
 		return ;
 	}
-	if (ch->getModes() == "+i") {//CONTROLLO DEBOLE SERVE UN QUALCOSA CHE GESTISCA ANCHE +ik o +it ecc...
+	if (ch->getInviteOnly()) {//CONTROLLO DEBOLE SERVE UN QUALCOSA CHE GESTISCA ANCHE +ik o +it ecc...
 		if (!ch->isOperator(client.getNickname())) {
 			sendMessageToClient(client.getFd(), ":" + _name + " " + msg.getParams()[1] +" 482 :You're not channel operator");
 			return ;
