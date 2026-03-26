@@ -29,7 +29,7 @@
 - [X] USER
 - [X] Welcome messages (001 002 003 004)
 - [X] PING / PONG
-- [ ] QUIT
+- [X] QUIT
 - [X] PRIVMSG (privato)
 
 ## Fase 3 — Canali
@@ -40,7 +40,7 @@
 
 ## Fase 4 — Operatori
 - [.] KICK //wip caro
-- [ ] INVITE
+- [X] INVITE//da modificare i messaggi di errore (per hexchat)
 - [ ] Test con nc — messaggi parziali
 - [X] TOPIC (modifica)
 - [ ] MODE (lettura)
@@ -57,6 +57,10 @@
 - [ ] Test disconnessione brusca
 - [ ] Test tutti i comandi operatore
 - [ ] Test errori numerici
+
+## Fase 6 — LOGS
+- [ ] funzione log normali
+- [ ] funzione error log
 
 ## TO  FIX:
 - [] NICK: se nick già registrato e cambio nick → notifica il client e tutti i canali in cui si trova

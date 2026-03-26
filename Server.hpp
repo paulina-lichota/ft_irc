@@ -6,7 +6,7 @@
 /*   By: francema <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/26 12:48:44 by francema         ###   ########.fr       */
+/*   Updated: 2026/03/26 19:06:54 by francema         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,12 @@
 
 class Server {
 	private:
+		enum LogType {
+			LOG_IN,
+			LOG_OUT,
+			LOG_SERVER,
+			LOG_DEBUG
+		};
 		std::string					_name; // nome del server, usato nei prefix dei messaggi (es. :ircserv 001 nickname :Welcome to the IRC server)
 		int							_port;
 		std::string					_password; // PASS mypassword -> mypassword == _passoword, altrimenti connessione rifiutata
@@ -34,6 +40,8 @@ class Server {
 		~Server();
 
 		void run();
+		// void log(LogType type, const Client* client, const std::string& msg);
+		// void errlog(Client &client, const std::string &code, const std::string &target, const std::string &message);
 		// Handlers:
 		void handleNewConnection();
 		void handleClientDisconnection(size_t index);

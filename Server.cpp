@@ -6,7 +6,7 @@
 /*   By: francema <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/26 17:23:15 by francema         ###   ########.fr       */
+/*   Updated: 2026/03/26 18:58:07 by francema         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,6 +105,29 @@ void	Server::run(){
 	}
 }
 
+void Server::log(LogType type, const Client* client, const std::string& msg) {
+std::string prefix;
+
+	// Tipo log
+	switch (type) {
+		case LOG_IN:     prefix = "[IN]"; break;
+		case LOG_OUT:    prefix = "[OUT]"; break;
+		case LOG_SERVER: prefix = "[SERVER]"; break;
+		case LOG_DEBUG:  prefix = "[DEBUG]"; break;
+	}
+
+	// Info client
+	std::string clientInfo = "[fd:?]";
+	std::string identity;
+
+	if (client) {
+		clientInfo = "[fd:" + std::to_string(client->getFd()) + "]";
+		if (!client->getNickname().empty())
+			identity = "[" + client->getPrefix() + "]";
+	}
+
+	std::cout << clientInfo << prefix << identity << " " << msg << std::endl;
+}
 /* ------------------------------------ Handlers ----------------------------------- */
 
 /*
@@ -209,8 +232,8 @@ void Server::initActions()
 	_actions["TOPIC"] = &Server::handleTopic;
 	_actions["MODE"] = &Server::handleMode;
 	_actions["KICK"] = &Server::handleKick;
-	_actions["QUIT"] = &Server::handleQuit; // gestisce anche il caso in cui il client si disconnette senza inviare QUIT, ma semplicemente chiudendo la connessione
-	// _actions["INVITE"] = &Server::handleInvite;
+	_actions["QUIT"] = &Server::handleQuit;// gestisce anche il caso in cui il client si disconnette senza inviare QUIT, ma semplicemente chiudendo la connessione
+	_actions["INVITE"] = &Server::handleInvite;
 	// AGGIORNARE MAN MANO
 }
 
@@ -378,11 +401,12 @@ void Server::handlePing(const Message &msg, Client &client) {
 */
 void Server::handleQuit(const Message &msg, Client &client) {
 	std::string quitMsg = "Client quit";
-	if (msg.hasTrailing())
+	if (msg.hasTrailing()) {
 		quitMsg = msg.getTrailing();
-
+		if (quitMsg.length() > 509)
+			quitMsg = quitMsg.substr(0, 509);
+	}
 	std::string quitMessage = client.getPrefix() + " QUIT :" + quitMsg;
-
 	for (size_t i = 0; i < _channels.size(); i++) {
 		if (_channels[i].isMember(client.getNickname()))
 			broadcastMessageToChannel(quitMessage, _channels[i], client.getNickname());
@@ -391,7 +415,8 @@ void Server::handleQuit(const Message &msg, Client &client) {
 	std::cout << "[fd:" << client.getFd() << "] QUIT" << std::endl;
 	size_t idx = pollfdIndexByFd(client.getFd());
 	if (idx < _pollFds.size())
-		handleClientDisconnection(idx);}
+		handleClientDisconnection(idx);
+}
 
 // es. client manda "JOIN #channel"
 //     server risponde "JOIN #channel"
@@ -702,7 +727,7 @@ void Server::handleInvite(const Message &msg, Client &client)
 		sendMessageToClient(client.getFd(), ":" + _name + " " + msg.getParams()[0] + " 443 " + msg.getParams()[1] + " :is already on channel");
 		return ;
 	}
-	if (ch->getInviteOnly()) {//CONTROLLO DEBOLE SERVE UN QUALCOSA CHE GESTISCA ANCHE +ik o +it ecc...
+	if (ch->getInviteOnly()) {
 		if (!ch->isOperator(client.getNickname())) {
 			sendMessageToClient(client.getFd(), ":" + _name + " " + msg.getParams()[1] +" 482 :You're not channel operator");
 			return ;
