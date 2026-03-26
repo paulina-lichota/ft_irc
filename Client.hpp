@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/22 16:23:34 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/25 12:52:33 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/26 14:46:49 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@ class Client {
 		const std::string& getNickname() const;
 		const std::string& getUsername() const;
 		const std::string& getHostname() const;
+		const std::string& getPrefix() const; // :nickname!username@hostname
 		// Setters
 		void setNickname(const std::string &nickname);
 		void setUsername(const std::string &username);

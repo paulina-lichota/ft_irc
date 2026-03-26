@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/26 13:35:52 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/26 14:54:42 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -357,10 +357,31 @@ void Server::handlePing(const Message &msg, Client &client)
 	sendMessageToClient(client.getFd(), message);
 }
 
+/*
+** Gestisce il comando QUIT: il client vuole disconnettersi volontariamente.
+**
+** La disconnessione "pulita" tramite QUIT è diversa da una disconnessione
+** brusca (recv() == 0 o POLLHUP): in questo caso il client manda esplicitamente
+** il comando, quindi il server deve prima notificare tutti i canali coinvolti
+** e poi chiudere la connessione.
+**
+** Sequenza:
+**   1. Costruisce il messaggio QUIT con il prefix completo nick!user@host
+**      e il quit message (trailing del comando, oppure "Client quit" di default)
+**   2. Broadcast del messaggio a tutti i canali di cui il client è membro,
+**      escludendo il client stesso (che riceverà il suo messaggio al passo 3)
+**   3. Invia il messaggio QUIT anche al client che ha mandato il comando
+**      (HexChat si aspetta di ricevere il proprio QUIT prima che la connessione chiuda)
+**   4. Chiama handleClientDisconnection() che fa il cleanup: rimuove il client
+**      dai canali, chiude il fd, rimuove da _clients e _pollFds
+*/
 void Server::handleQuit(const Message &msg, Client &client) {
-	std::string quitMessage = ":" + client.getNickname() + "!" + client.getUsername() + "@" + client.getHostname() + " QUIT :" + (msg.hasTrailing() ? msg.getTrailing() : "Client quit");
+	std::string quitMsg = "Client quit";
+	if (msg.hasTrailing())
+		quitMsg = msg.getTrailing();
 
-	// broadcast ai canali prima di rimuovere
+	std::string quitMessage = client.getPrefix() + " QUIT :" + quitMsg;
+
 	for (size_t i = 0; i < _channels.size(); i++) {
 		if (_channels[i].isMember(client.getNickname()))
 			broadcastMessageToChannel(quitMessage, _channels[i], client.getNickname());

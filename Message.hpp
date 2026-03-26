@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Message.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/24 17:18:44 by plichota          #+#    #+#             */
-/*   Updated: 2026/03/26 01:40:53 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/26 14:50:07 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ private:
 	std::string					_prefix;
 	std::string					_command;
 	std::vector<std::string>	_params;
-	bool                  _hasTrailing;
+	bool						_hasTrailing;
 	std::string					_trailing; // parte finale del messaggio dopo i parametri, inizia con ':' e può contenere spazi, es. :message text with spaces
 	bool						_valid;
 	std::string					_error;
@@ -37,7 +37,7 @@ public:
 	bool							isValid()		const;
 	const std::string&				getError()		const;
 	const std::string&				getTrailing()	const;
-	bool 						hasTrailing()	const;
+	bool 							hasTrailing()		const;
 };
 
 #endif
