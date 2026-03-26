@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/26 19:20:24 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/26 19:28:11 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -645,8 +645,7 @@ void Server::handleMode(const Message &msg, Client &client)
 // se non c'e' + metto adding flag di default
 void Server::applyMode(const Message &msg, Channel &channel, Client &client)
 {
-	(void)client;
-	(void)channel;
+	std::string appliedModes = "";
 	// dividere mode in flag e parametro
 	// se non inizia con + o - è sbagliato
 	std::string mode = msg.getParams()[1];
@@ -667,10 +666,15 @@ void Server::applyMode(const Message &msg, Channel &channel, Client &client)
 	{
 		// cerco + o -
 		if (mode[i] == '+')
+		{
 			adding = true;
+			continue;
+		}
 		else if (mode[i] == '-')
+		{
 			adding = false;
-
+			continue;
+		}
 		
 		if (mode[i] == 'o')
 		{
@@ -681,6 +685,7 @@ void Server::applyMode(const Message &msg, Channel &channel, Client &client)
 			}
 			if (!channel.isMember(msg.getParams()[paramIndex])) {
 				sendMessageToClient(client.getFd(), ":" + _name + " 441 " + msg.getParams()[paramIndex] + " " + channel.getName() + " :They aren't on that channel\r\n");
+				paramIndex++; // anche se il membro non è nel canale, devo comunque usare il parametro
 				continue; // salta alla prossima iterazione del for
 			}
 			std::string member = msg.getParams()[paramIndex];
@@ -721,13 +726,13 @@ void Server::applyMode(const Message &msg, Channel &channel, Client &client)
 					sendMessageToClient(client.getFd(), ":" + _name + " 461 " + client.getNickname() + " MODE :Not enough parameters\r\n");
 					continue;
 				}
+				size_t limit = atoi(msg.getParams()[paramIndex].c_str());
+				paramIndex++;
 				if (!channel.isValidLimit(msg.getParams()[paramIndex])) {
 					sendMessageToClient(client.getFd(), ":" + _name + " 461 " + client.getNickname() + " MODE :Not enough parameters\r\n");
 					continue;
 				}
-				size_t limit = atoi(msg.getParams()[paramIndex].c_str());
 				channel.setUsersLimit(limit);
-				paramIndex++;
 			}
 			else
 			{
@@ -740,8 +745,7 @@ void Server::applyMode(const Message &msg, Channel &channel, Client &client)
 			return ;
 		}
 	}
-	// avvisa delle modifiche
-	broadcastMessageToChannel(client.getPrefix() + " MODE " + channel.getName() + " " + channel.getModes(), channel, "");
+	broadcastMessageToChannel(":" + client.getPrefix() + " MODE " + channel.getName() + " " + appliedModes, channel, "");
 }
 
 /* ------------------------------------ Operator actions ----------------------------------- */
