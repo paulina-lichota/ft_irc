@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/24 17:55:39 by plichota          #+#    #+#             */
-/*   Updated: 2026/03/26 13:20:36 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/26 19:06:19 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,6 +80,8 @@ class Channel
 		void removeInvited(const std::string &nickname); // rimuovi dopo il JOIN
 
 		void printChannelInfo();
+		
+		bool isValidLimit(const std::string &str);
 };
 
 #endif

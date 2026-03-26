@@ -39,11 +39,13 @@
 - [X] TOPIC (lettura)
 
 ## Fase 4 — Operatori
-- [.] KICK //wip caro
-- [X] INVITE//da modificare i messaggi di errore (per hexchat)
+- [.] KICK // wip caro
+- [X] INVITE // da modificare i messaggi di errore (per hexchat)
+- [X] KICK
+- [ ] INVITE
 - [ ] Test con nc — messaggi parziali
 - [X] TOPIC (modifica)
-- [ ] MODE (lettura)
+- [X] MODE (lettura)
 - [ ] MODE +i
 - [ ] MODE +t
 - [ ] MODE +k
@@ -67,6 +69,7 @@
 - [] NICK: aggiungere isValidNickname (esiste già)
 - [X] PRIVMSG nel canale non va
 - [] server si spegne: client cosa deve fare??? analizzare comportamento atteso (nc: write failed (0/2): Broken pipe)
+- [] (Server) 8.9 Tracking nickname changes -> https://www.rfc-editor.org/rfc/rfc1459.html#section-4.2
 
 PRIVMSG #42: ciao
 :ircserv 412 Pau :No text to send //fixxato ora da channel sconosciuto

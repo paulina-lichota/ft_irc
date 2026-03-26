@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/24 17:56:28 by plichota          #+#    #+#             */
-/*   Updated: 2026/03/26 13:20:28 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/26 19:09:40 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -187,4 +187,18 @@ void Channel::printChannelInfo()
 		<< ", member count: " << getMemberCount()
 		<< ", operator count: " << getOperatorCount()
 		<< std::endl;
+}
+
+/* ------------------------------------ Helpers ----------------------------------- */
+
+bool Channel::isValidLimit(const std::string &str)
+{
+    if (str.empty())
+        return false;
+    for (size_t i = 0; i < str.size(); i++) {
+        if (!std::isdigit(str[i]))
+            return false;
+    }
+    int limit = atoi(str.c_str());
+    return limit > 0;
 }

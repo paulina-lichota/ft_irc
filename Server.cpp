@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: francema <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/26 19:13:20 by francema         ###   ########.fr       */
+/*   Updated: 2026/03/26 19:20:24 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -637,21 +637,111 @@ void Server::handleMode(const Message &msg, Client &client)
 	}
 
 	// SET MODE
-	// se non inizia con + o - è sbagliato
-	std::string mode = msg.getParams()[1];
-	if (!(mode[0] == '+' || mode[0] == '-')) {
-		sendMessageToClient(client.getFd(), ":" + _name + " 461 " + msg.getCommand() + " :Invalid mode flag");
-		return ;
-	}
-
-	handleMode(mode, *channel, client);
+	applyMode(msg, *channel, client);
 }
 
-void Server::handleMode(const std::string &mode, Channel &channel, Client &client)
+/* ------------------------------------ Modes ----------------------------------- */
+
+// se non c'e' + metto adding flag di default
+void Server::applyMode(const Message &msg, Channel &channel, Client &client)
 {
-	(void)	mode;
-	(void)	channel;
-	(void)	client;
+	(void)client;
+	(void)channel;
+	// dividere mode in flag e parametro
+	// se non inizia con + o - è sbagliato
+	std::string mode = msg.getParams()[1];
+	size_t paramIndex = 2; // indice del primo parametro dopo mode
+	
+	// stampo parametri per debug
+	std::cout << "mode: " << mode << std::endl;
+	for (size_t i = 0; i < msg.getParams().size(); i++)
+	{
+		std::cout << "param[" << i << "]: " << msg.getParams()[i] << std::endl;
+	}
+
+	// flag di default (+)
+	bool adding = true;
+
+	// check operator gia' effettuato prima di chiamare questa funzione
+	for (size_t i = 0; i < mode.size(); i++)
+	{
+		// cerco + o -
+		if (mode[i] == '+')
+			adding = true;
+		else if (mode[i] == '-')
+			adding = false;
+
+		
+		if (mode[i] == 'o')
+		{
+			// manca parametro
+			if (paramIndex >= msg.getParams().size()) {
+				sendMessageToClient(client.getFd(), ":" + _name + " 461 " + client.getNickname() + " MODE :Not enough parameters\r\n");
+				continue; // salta alla prossima iterazione del for
+			}
+			if (!channel.isMember(msg.getParams()[paramIndex])) {
+				sendMessageToClient(client.getFd(), ":" + _name + " 441 " + msg.getParams()[paramIndex] + " " + channel.getName() + " :They aren't on that channel\r\n");
+				continue; // salta alla prossima iterazione del for
+			}
+			std::string member = msg.getParams()[paramIndex];
+			paramIndex++;
+			if (adding)
+				channel.addOperator(member);
+			else
+				channel.removeOperator(member);
+		}
+		else if (mode[i] == 'i')
+		{
+			channel.setInviteOnly(adding);
+		}
+		else if (mode[i] == 't')
+		{
+			channel.setTopicRestricted(adding);
+		}
+		else if (mode[i] == 'k')
+		{
+			if (adding)
+			{
+				if (paramIndex >= msg.getParams().size()) {
+					sendMessageToClient(client.getFd(), ":" + _name + " 461 " + client.getNickname() + " MODE :Not enough parameters\r\n");
+					continue; // salta alla prossima iterazione del for
+				}
+				channel.setKey(msg.getParams()[paramIndex]);
+				paramIndex++;
+			}
+			else
+				channel.setKey("");
+		}
+		else if (mode[i] == 'l')
+		{
+			//  +l 0 non è valido per togliere limite
+			if (adding)
+			{
+				if (paramIndex >= msg.getParams().size()) {
+					sendMessageToClient(client.getFd(), ":" + _name + " 461 " + client.getNickname() + " MODE :Not enough parameters\r\n");
+					continue;
+				}
+				if (!channel.isValidLimit(msg.getParams()[paramIndex])) {
+					sendMessageToClient(client.getFd(), ":" + _name + " 461 " + client.getNickname() + " MODE :Not enough parameters\r\n");
+					continue;
+				}
+				size_t limit = atoi(msg.getParams()[paramIndex].c_str());
+				channel.setUsersLimit(limit);
+				paramIndex++;
+			}
+			else
+			{
+				channel.setUsersLimit(0);
+			}
+		}
+		else
+		{
+			sendMessageToClient(client.getFd(), ":" + _name + " 501 " + client.getNickname() + " :Unknown MODE flag");
+			return ;
+		}
+	}
+	// avvisa delle modifiche
+	broadcastMessageToChannel(client.getPrefix() + " MODE " + channel.getName() + " " + channel.getModes(), channel, "");
 }
 
 /* ------------------------------------ Operator actions ----------------------------------- */
