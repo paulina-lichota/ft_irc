@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/26 01:39:03 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/26 01:49:52 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -477,7 +477,7 @@ void Server::handlePrivmsg(const Message &msg, Client &client)
 
 void Server::handleTopic(const Message &msg, Client &client)
 {
-	std::cout << msg.getParams().size() << " params, trailing: [" << msg.getTrailing() << "]" << std::endl;
+	std::cout << msg.getParams().size() << " params, hasTrailing: " << msg.hasTrailing() << ", trailing: [" << msg.getTrailing() << "]" << std::endl;
 
 	// es. TOPIC
 	if (msg.getParams().empty()) {
