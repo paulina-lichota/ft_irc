@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/26 21:47:20 by plichota          #+#    #+#             */
-/*   Updated: 2026/03/26 22:20:25 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/26 22:50:45 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ class Bot
         ~Bot();
 
         static bool isValidPort(const std::string &port);
+        struct sockaddr_in initAddStruct(int port);
 
         void run();
 };

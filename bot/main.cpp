@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/26 22:00:15 by plichota          #+#    #+#             */
-/*   Updated: 2026/03/26 22:21:13 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/26 22:53:07 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,8 @@
 #include <cstdlib>
 
 // ./bot <port> <password> <channel>
+// ATTENZIONE: # interpreta come commento
+// ./bot 6667 mypassword "#42"
 int main(int argc, char **argv)
 {
     if (argc != 4) {
