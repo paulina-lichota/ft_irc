@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/26 21:47:20 by plichota          #+#    #+#             */
-/*   Updated: 2026/03/26 22:15:11 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/26 22:20:25 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,8 @@ class Bot
     public:
         Bot(int port, const std::string &password, const std::string &channel);
         ~Bot();
+
+        static bool isValidPort(const std::string &port);
 
         void run();
 };
