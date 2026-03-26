@@ -6,7 +6,7 @@
 /*   By: francema <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/26 11:10:38 by francema         ###   ########.fr       */
+/*   Updated: 2026/03/26 12:48:44 by francema         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,7 +80,7 @@ class Server {
 		void handleMode(const Message &msg, Client &client);
 		// Operator actions:
 		void handleKick(const Message &msg, Client &client);
-		// void handleInvite(const Message &msg, Client &client); // invita un client al can
+		void handleInvite(const Message &msg, Client &client); // invita un client al can
 };
 
 #endif
