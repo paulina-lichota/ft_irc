@@ -6,7 +6,7 @@
 /*   By: francema <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/26 19:10:57 by francema         ###   ########.fr       */
+/*   Updated: 2026/03/26 19:13:20 by francema         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -354,7 +354,6 @@ void Server::handleUser(const Message &msg, Client &client) {
 		std::cout << "[fd:" << client.getFd() << "] USER → 462" << std::endl;
 		return ;
 	}
-	client.setHostname(msg.getParams()[1]);
 	client.setRealname(msg.getTrailing());
 	if (!client.getNickname().empty()) {
 		client.setRegistered(true);
@@ -645,7 +644,14 @@ void Server::handleMode(const Message &msg, Client &client)
 		return ;
 	}
 
-	// handleMode(mode, channel, client);
+	handleMode(mode, *channel, client);
+}
+
+void Server::handleMode(const std::string &mode, Channel &channel, Client &client)
+{
+	(void)	mode;
+	(void)	channel;
+	(void)	client;
 }
 
 /* ------------------------------------ Operator actions ----------------------------------- */
