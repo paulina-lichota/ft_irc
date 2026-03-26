@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/26 17:18:52 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/26 17:36:22 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -331,7 +331,6 @@ void Server::handleUser(const Message &msg, Client &client) {
 		std::cout << "[fd:" << client.getFd() << "] USER → 462" << std::endl;
 		return ;
 	}
-	client.setHostname(msg.getParams()[1]);
 	client.setRealname(msg.getTrailing());
 	if (!client.getNickname().empty()) {
 		client.setRegistered(true);

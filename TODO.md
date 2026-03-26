@@ -29,7 +29,7 @@
 - [X] USER
 - [X] Welcome messages (001 002 003 004)
 - [X] PING / PONG
-- [ ] QUIT
+- [X] QUIT
 - [X] PRIVMSG (privato)
 
 ## Fase 3 — Canali
