@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: francema <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/26 12:46:55 by francema         ###   ########.fr       */
+/*   Updated: 2026/03/26 13:35:52 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -572,7 +572,22 @@ void Server::handleMode(const Message &msg, Client &client)
 		return ;
 	}
 
+	// se non sei operatore non puoi fare altro
+	if (!channel->isOperator(client.getNickname()))
+	{
+		sendMessageToClient(client.getFd(), "482 " + channelName + " :You're not channel operator");
+		return ;
+	}
+
 	// SET MODE
+	// se non inizia con + o - è sbagliato
+	std::string mode = msg.getParams()[1];
+	if (!(mode[0] == '+' || mode[0] == '-')) {
+		sendMessageToClient(client.getFd(), ":" + _name + " 461 " + msg.getCommand() + " :Invalid mode flag");
+		return ;
+	}
+
+	// handleMode(mode, channel, client);
 }
 
 /* ------------------------------------ Operator actions ----------------------------------- */
