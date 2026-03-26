@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/26 22:00:29 by plichota          #+#    #+#             */
-/*   Updated: 2026/03/26 22:54:14 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/26 22:56:34 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,27 @@ struct sockaddr_in Bot::initAddStruct(int port)
     addr.sin_port = htons(port); // porta, convertita in network byte order (al contrario essenzialmente)
     inet_pton(AF_INET, "127.0.0.1", &addr.sin_addr); // converte in binario (senno' kernel non capisce)
     return (addr);
+}
+
+void Bot::joinChannel()
+{
+    // TODO
+}
+
+void Bot::registerClient()
+{
+    // TODO
+}
+
+void Bot::sendMessage(const std::string &message)
+{
+    (void)message;
+    // TODO
+}
+
+void Bot::handleLoop()
+{
+    // TODO
 }
 
 void Bot::run()

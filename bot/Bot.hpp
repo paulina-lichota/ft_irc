@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/26 21:47:20 by plichota          #+#    #+#             */
-/*   Updated: 2026/03/26 22:50:45 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/26 22:56:27 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,10 +27,14 @@ class Bot
         Bot(int port, const std::string &password, const std::string &channel);
         ~Bot();
 
+        void run();
+        void joinChannel();
+        void registerClient();
+        void sendMessage(const std::string &message);
+        void handleLoop();
+
         static bool isValidPort(const std::string &port);
         struct sockaddr_in initAddStruct(int port);
-
-        void run();
 };
 
 #endif
