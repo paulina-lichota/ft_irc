@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/24 17:18:44 by plichota          #+#    #+#             */
-/*   Updated: 2026/03/26 01:06:50 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/26 01:40:53 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ public:
 	bool							isValid()		const;
 	const std::string&				getError()		const;
 	const std::string&				getTrailing()	const;
-	const bool Message::hasTrailing() const;
+	bool 						hasTrailing()	const;
 };
 
 #endif

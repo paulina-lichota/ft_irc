@@ -6,22 +6,23 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/24 17:18:37 by plichota          #+#    #+#             */
-/*   Updated: 2026/03/26 01:06:58 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/26 01:42:32 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Message.hpp"
 
-Message::Message() : _prefix(""), _command(""), _params(), _trailing(""), _valid(true), _error(""), _hasTrailing(false) {}
+Message::Message() : _prefix(""), _command(""), _params(), _hasTrailing(false),_trailing(""), _valid(true), _error("") {}
 
 Message::Message(const Message &other)
 	:_prefix(other._prefix),
 	_command(other._command),
 	_params(other._params),
+	_hasTrailing(other._hasTrailing),
 	_trailing(other._trailing),
 	_valid(other._valid),
-	_error(other._error),
-	_hasTrailing(other._hasTrailing) {}
+	_error(other._error)
+	{}
 
 Message &Message::operator=(const Message &other) {
 	if (this != &other) {
@@ -38,7 +39,7 @@ Message &Message::operator=(const Message &other) {
 
 Message::~Message() {}
 
-Message::Message(const std::string &raw): _prefix(""), _command(""), _params(), _trailing(""), _valid(true), _error(""), _hasTrailing(false) {
+Message::Message(const std::string &raw): _prefix(""), _command(""), _params(), _hasTrailing(false), _trailing(""), _valid(true), _error("") {
 	std::string line = raw;
 
 	//trim leading spaces
@@ -112,7 +113,7 @@ const std::vector<std::string>&	Message::getParams() const { return _params; }
 
 const std::string&	Message::getError() const { return _error; }
 
-const bool Message::hasTrailing() const { return _hasTrailing; }
+bool Message::hasTrailing() const { return _hasTrailing; }
 
 const std::string&	Message::getTrailing() const { return _trailing; }
 
