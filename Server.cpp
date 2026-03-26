@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/26 09:35:56 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/26 09:59:34 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -182,6 +182,7 @@ bool Server::handleClientMessage(size_t index) {
 	_clients[fd].appendToBuffer(std::string(s_buffer, n));
 	std::string message;
 	while (!(message = _clients[fd].extractMessageFromBuffer()).empty()) {
+		std::cout << YELLOW << "[fd:" << fd << "] Received: " << message << RESET << std::endl;
 		Message msg(message);
 		std::cout << "[fd:" << fd << "] " << msg.getCommand() << std::endl;
 		dispatchAction(msg, _clients[fd]);
@@ -601,13 +602,13 @@ void Server::handleKick(const Message &msg, Client &client) {
 		return ;
 	}
 	// remove target client from channel and send KICK message to channel members (everyone, also sender)
-	channel->removeMember(targetNickname);
-	channel->removeOperator(targetNickname);
-	channel->removeInvited(targetNickname);
 	std::string kickMessage = ":" + client.getNickname() + " KICK " + channelName + " " + targetNickname;
 	if (!msg.getTrailing().empty())
 		kickMessage += " :" + msg.getTrailing();
 	broadcastMessageToChannel(kickMessage, *channel, "");
+	channel->removeMember(targetNickname);
+	channel->removeOperator(targetNickname);
+	channel->removeInvited(targetNickname);
 }
 
 // void Server::handleInvite(const Message &msg, Client &client)
