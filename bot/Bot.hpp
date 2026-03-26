@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/26 21:47:20 by plichota          #+#    #+#             */
-/*   Updated: 2026/03/26 22:08:46 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/26 22:15:11 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,9 +19,14 @@ class Bot
 {
     private:
         std::string _name;
+        int _fd;
+        int _port;
+        std::string _password;
+        std::string _channel;
     public:
-        Bot(const std::string &name);
+        Bot(int port, const std::string &password, const std::string &channel);
         ~Bot();
+
         void run();
 };
 
