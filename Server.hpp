@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: francema <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:25:20 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/26 09:25:48 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/26 11:10:38 by francema         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,12 +34,6 @@ class Server {
 		~Server();
 
 		void run();
-
-		//checks di esistenza
-		// bool isNick(const std::string& nick);
-		// bool isChannel(const std::string& channel);
-		bool isNickInChannel(const std::string& nick);
-
 		// Handlers:
 		void handleNewConnection();
 		void handleClientDisconnection(size_t index);

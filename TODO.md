@@ -65,7 +65,7 @@
 - [] server si spegne: client cosa deve fare??? analizzare comportamento atteso (nc: write failed (0/2): Broken pipe)
 
 PRIVMSG #42: ciao
-:ircserv 412 Pau :No text to send
+:ircserv 412 Pau :No text to send //fixxato ora da channel sconosciuto
 
 ## TO  IMPROVE:
 - [] logging messaggi sul client -> mandare prefix server

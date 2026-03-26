@@ -36,7 +36,7 @@ int main() {
 	std::string t5 = "   PRIVMSG    #chan     :hello    world   ";
 
 	// 🔹 trailing vuoto
-	std::string t6 = "PRIVMSG #chan :";
+	std::string t6 = "PRIVMSG #chan: ciao";
 
 	// 🔹 solo prefix (ERRORE)
 	std::string t7 = ":ciao";

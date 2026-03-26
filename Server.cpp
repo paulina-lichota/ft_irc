@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: francema <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/26 10:00:55 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/26 12:46:55 by francema         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -454,10 +454,6 @@ void Server::handlePrivmsg(const Message &msg, Client &client)
 		sendMessageToClient(client.getFd(), ":" + _name + " 461 " + client.getNickname() + " PRIVMSG :Not enough parameters\r\n");
 		return ;
 	}
-	if (msg.getTrailing().empty()) {
-		sendMessageToClient(client.getFd(), ":" + _name + " 412 " + client.getNickname() + " :No text to send");
-		return ;
-	}
 	std::string target = msg.getParams()[0];
 	// ===================== CHANNEL =====================
 	if (!target.empty() && (target[0] == '#' || target[0] == '&'))
@@ -466,13 +462,17 @@ void Server::handlePrivmsg(const Message &msg, Client &client)
 		// non trova channel
 		if (!channel) {
 			sendMessageToClient(client.getFd(),
-				":" + _name + " 403 " + client.getNickname() + " " + target + " :No such channel");
+				":" + _name + " 403 " + client.getNickname() + " " + target + " :No such channel\r\n");
 			return;
 		}
 		// non membro del canale
 		if (!channel->isMember(client.getNickname())) {
-			sendMessageToClient(client.getFd(), ":" + _name + " 404 " + client.getNickname() + " " + target + " :Cannot send to channel");
+			sendMessageToClient(client.getFd(), ":" + _name + " 404 " + client.getNickname() + " " + target + " :Cannot send to channel\r\n");
 			return;
+		}
+		if (msg.getTrailing().empty()) {
+			sendMessageToClient(client.getFd(), ":" + _name + " 412 " + client.getNickname() + " :No text to send\r\n");
+			return ;
 		}
 		std::string message = ":" + client.getNickname() + " PRIVMSG " + target + " :" + msg.getTrailing();
 		broadcastMessageToChannel(message, *channel, client.getNickname());
@@ -481,8 +481,12 @@ void Server::handlePrivmsg(const Message &msg, Client &client)
 	else {
 		int targetFd = getFdByNickname(target);
 		if (targetFd == -1) {
-			sendMessageToClient(client.getFd(), ":" + _name + " 401 " + client.getNickname() + " " + target + " :No such nick/channel");
+			sendMessageToClient(client.getFd(), ":" + _name + " 401 " + client.getNickname() + " " + target + " :No such nick/channel\r\n");
 			return;
+		}
+		if (msg.getTrailing().empty()) {
+			sendMessageToClient(client.getFd(), ":" + _name + " 412 " + client.getNickname() + " :No text to send\r\n");
+			return ;
 		}
 		std::string message = ":" + client.getNickname() + " PRIVMSG " + target + " :" + msg.getTrailing();
 		sendMessageToClient(targetFd, message);
@@ -617,10 +621,10 @@ void Server::handleKick(const Message &msg, Client &client) {
 
 // void Server::handleInvite(const Message &msg, Client &client)
 // {
-// 	// check if client is operator of the channel
-// 	// check if channel exists
-// 	// check if target client exists
-// 	// send INVITE message to target client
+// 	check if client is operator of the channel
+// 	check if channel exists
+// 	check if target client exists
+// 	send INVITE message to target client
 // }
 
 /* ------------------------------------ Channel ----------------------------------- */
