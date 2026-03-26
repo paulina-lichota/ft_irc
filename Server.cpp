@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/26 16:40:50 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/26 17:14:08 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -330,7 +330,6 @@ void Server::handleUser(const Message &msg, Client &client) {
 		std::cout << "[fd:" << client.getFd() << "] USER → 462" << std::endl;
 		return ;
 	}
-	client.setUsername(msg.getParams()[0]);
 	client.setHostname(msg.getParams()[1]);
 	client.setRealname(msg.getTrailing());
 	if (!client.getNickname().empty()) {
@@ -343,17 +342,19 @@ void Server::handleUser(const Message &msg, Client &client) {
 //     server risponde "PONG :123"
 // no params -> ERR_NOORIGIN
 // max 2 params -> se più di 2, ignora quelli extra
-void Server::handlePing(const Message &msg, Client &client)
-{
-	if (msg.getParams().empty()) {
-		sendMessageToClient(client.getFd(), ":" + _name + " 409 " + client.getNickname() + " :No origin specified"); // ERR_NOORIGIN
+void Server::handlePing(const Message &msg, Client &client) {
+	std::string token;
+	if (!msg.getParams().empty())
+		token = msg.getParams()[0];
+	else if (msg.hasTrailing())
+		token = msg.getTrailing();
+	else {
+		sendMessageToClient(client.getFd(), ":" + _name + " 409 " + client.getNickname() + " :No origin specified");
 		std::cout << "[fd:" << client.getFd() << "] PING → 409" << std::endl;
 		return;
 	}
-	std::string message = ":" + _name + " PONG " + _name + " " + msg.getParams()[0];
-	if (msg.getParams().size() > 1)
-		message += " " + msg.getParams()[1];
-	sendMessageToClient(client.getFd(), message);
+	sendMessageToClient(client.getFd(), ":" + _name + " PONG " + _name + " :" + token);
+	std::cout << "[fd:" << client.getFd() << "] PING → PONG" << std::endl;
 }
 
 /*
@@ -493,7 +494,7 @@ void Server::handlePrivmsg(const Message &msg, Client &client)
 		// non trova channel
 		if (!channel) {
 			sendMessageToClient(client.getFd(),
-				":" + _name + " 403 " + client.getNickname() + " " + target + " :No such channel\r\n");
+				":" + _name + " 403 " + client.getNickname() + " " + target + " :No such channel");
 			return;
 		}
 		// non membro del canale
