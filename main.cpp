@@ -3,22 +3,37 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: francema <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/26 11:52:09 by francema         ###   ########.fr       */
+/*   Updated: 2026/03/26 21:19:51 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-
-
 #include "includes.hpp"
-
 #include "signal.hpp"
 #include "Server.hpp"
 
 // ./ircserv 6667 password
 // nc -C 127.0.0.1 6667
+//  -C usa \r\n come separatore
+
+/*
+ se non va Ctrl+D usare sleep:
+ 
+{
+    printf "PASS "
+    sleep 0.5
+    printf "pass"
+    sleep 0.5
+    printf "\r\n"
+    sleep 0.5
+    printf "NICK paolo\r\n"
+    sleep 0.5
+    printf "USER paolo 0 * :Paolo\r\n"
+    sleep 10
+} | nc -C 127.0.0.1 6667
+*/
 
 int main(int argc, char **argv)
 {

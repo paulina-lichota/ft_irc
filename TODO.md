@@ -70,6 +70,10 @@
 - [X] PRIVMSG nel canale non va
 - [] server si spegne: client cosa deve fare??? analizzare comportamento atteso (nc: write failed (0/2): Broken pipe)
 - [] (Server) 8.9 Tracking nickname changes -> https://www.rfc-editor.org/rfc/rfc1459.html#section-4.2
+- [] `PING ciao` restituisce `:ircserv PONG ircserv :ciao` e' giusto?
+- [] puo' esistere username duplicato? -> se username e' gia' in uso non ottengo nessuna risposta dal server
+
+- [] dopo il QUIT che succede? (client nc non si chiude)
 
 PRIVMSG #42: ciao
 :ircserv 412 Pau :No text to send //fixxato ora da channel sconosciuto

@@ -52,14 +52,19 @@ PART <channel>
 QUIT [: <quit message>]
 ```
 
-## Architecture
-The server is a single threaded application that listens for incoming connections on a given port, using **poll()** to wait for events on the socket.
+## Reference
+Abbiamo scelto la versione rfc1459 [https://www.rfc-editor.org/rfc/rfc1459.html] per semplicita'.
 
-When a client connects, the server creates a new socket and associates it with the client.
+Differenze con altre versioni:
 
-The server then sends a handshake to the client, which consists of a PASS command followed by a NICK and USER command.
-After the handshake, the server waits for messages from the client.
-If the client sends a PING command, the server responds with a PONG command.
-If the client sends a JOIN command, the server creates a new channel and associates it with the client.
-If the client sends a PART command, the server removes the channel from the client's list of channels.
-If the client sends a QUIT command, the server closes the connection to the client.
+RFC 2812 (la piu' moderna)
+- Formato del comando USER leggermente diverso
+- Regole più precise sui nickname validi
+- Codici di errore aggiuntivi
+- Più dettagli su edge case
+
+RFC 2813:
+- riguarda la comunicazione server-to-server. Non ti serve per ft_irc (hai un solo server).
+
+RFC 7194 (2014):
+- aggiunge TLS/SSL. Non ti serve.

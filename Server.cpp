@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/26 20:44:07 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/26 21:03:38 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -797,7 +797,7 @@ void Server::handleKick(const Message &msg, Client &client) {
 		std::cout << "[fd:" << client.getFd() << "] KICK → 482" << std::endl;
 		return ;
 	}
-	// check if target client is in the channel
+// check if target client is in the channel
 	std::string targetNickname = msg.getParams()[1];
 	if (!channel->isMember(targetNickname)) {
 		sendMessageToClient(client.getFd(), "441 " + targetNickname + " " + channelName + " :They aren't on that channel");
