@@ -6,11 +6,12 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/26 17:14:08 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/26 17:18:52 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
+#include "Client.hpp"
 #include "Message.hpp"
 #include "signal.hpp"
 
@@ -666,13 +667,52 @@ void Server::handleKick(const Message &msg, Client &client) {
 	channel->removeInvited(targetNickname);
 }
 
-// void Server::handleInvite(const Message &msg, Client &client)
-// {
-// 	check if client is operator of the channel
-// 	check if channel exists
-// 	check if target client exists
-// 	send INVITE message to target client
-// }
+void Server::handleInvite(const Message &msg, Client &client)
+{
+	if (msg.getParams().empty()) {
+		sendMessageToClient(client.getFd(), ":" + _name + " 461 " + msg.getCommand() + " :Not enough parameters");
+		return ;
+	}
+	if (msg.getParams().size() != 2) {
+		sendMessageToClient(client.getFd(), ":" + _name + " 472 " + msg.getCommand() + " :wrong number of params");
+		return ;
+	}
+	if (!isValidNickname(msg.getParams()[0])){
+		sendMessageToClient(client.getFd(), ":" + _name + " 432 " + client.getNickname() + " :Erroneus nickname");
+		return ;
+	}
+	if (!isValidChannelName(msg.getParams()[1])) {
+		sendMessageToClient(client.getFd(), ":" + _name + " 476 " + client.getNickname() + " :ERR_BADCHANMASK");
+		return ;
+	}
+	if (getFdByNickname(msg.getParams()[0]) == -1) {
+		sendMessageToClient(client.getFd(), ":" + _name + " 401 " + client.getNickname() +  " :No such nick/channel");
+		return ;
+	}
+	Channel *ch = getChannelByName(msg.getParams()[1]);
+	if (ch == NULL) {
+		sendMessageToClient(client.getFd(), ":" + _name + " 403 " + msg.getParams()[1] +  " :No such channel");
+		return ;
+	}
+	if (!ch->isMember(client.getNickname())) {
+		sendMessageToClient(client.getFd(), ":" + _name + " 442 " + msg.getParams()[1] +  " :You're not on that channel");
+		return ;
+	}
+	if (ch->isMember(msg.getParams()[0])) {
+		sendMessageToClient(client.getFd(), ":" + _name + " " + msg.getParams()[0] + " 443 " + msg.getParams()[1] + " :is already on channel");
+		return ;
+	}
+	if (ch->getModes() == "+i") {//CONTROLLO DEBOLE SERVE UN QUALCOSA CHE GESTISCA ANCHE +ik o +it ecc...
+		if (!ch->isOperator(client.getNickname())) {
+			sendMessageToClient(client.getFd(), ":" + _name + " " + msg.getParams()[1] +" 482 :You're not channel operator");
+			return ;
+		}
+	}
+	ch->addInvited(msg.getParams()[0]);
+	sendMessageToClient(client.getFd(), ":" + _name + " 341 " + client.getNickname() + " " + msg.getParams()[0] + " " + msg.getParams()[1]);
+	Client user = _clients[getFdByNickname(msg.getParams()[0])];
+	sendMessageToClient(getFdByNickname(msg.getParams()[0]), ":" + client.getNickname() + "!" + user.getUsername() + "@" + user.getHostname() + " INVITE " + msg.getParams()[0] + " " + msg.getParams()[1]);
+}
 
 /* ------------------------------------ Channel ----------------------------------- */
 
