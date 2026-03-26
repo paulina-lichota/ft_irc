@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/26 21:47:20 by plichota          #+#    #+#             */
-/*   Updated: 2026/03/26 22:56:27 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/26 23:38:19 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #define BOT_HPP
 
 #include <string>
+#include <vector>
 
 class Bot
 {
@@ -23,9 +24,12 @@ class Bot
         int _port;
         std::string _password;
         std::string _channel;
+        std::vector<std::string> _fobiddenWords;
     public:
         Bot(int port, const std::string &password, const std::string &channel);
         ~Bot();
+
+        void initForbiddenWords();
 
         void run();
         void joinChannel();
