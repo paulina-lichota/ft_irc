@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: francema <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/26 17:23:15 by francema         ###   ########.fr       */
+/*   Updated: 2026/03/26 17:32:10 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -620,7 +620,14 @@ void Server::handleMode(const Message &msg, Client &client)
 		return ;
 	}
 
-	// handleMode(mode, channel, client);
+	handleMode(mode, *channel, client);
+}
+
+void Server::handleMode(const std::string &mode, Channel &channel, Client &client)
+{
+	(void)	mode;
+	(void)	channel;
+	(void)	client;
 }
 
 /* ------------------------------------ Operator actions ----------------------------------- */
