@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/26 19:34:48 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/26 20:15:40 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -508,7 +508,7 @@ void Server::handleJoin(const Message &msg, Client &client)
 void Server::handlePrivmsg(const Message &msg, Client &client)
 {
 	if (msg.getParams().empty()) {
-		sendMessageToClient(client.getFd(), ":" + _name + " 461 " + client.getNickname() + " PRIVMSG :Not enough parameters\r\n");
+		sendMessageToClient(client.getFd(), ":" + _name + " 461 " + client.getNickname() + " PRIVMSG :Not enough parameters");
 		return ;
 	}
 	std::string target = msg.getParams()[0];
@@ -524,11 +524,11 @@ void Server::handlePrivmsg(const Message &msg, Client &client)
 		}
 		// non membro del canale
 		if (!channel->isMember(client.getNickname())) {
-			sendMessageToClient(client.getFd(), ":" + _name + " 404 " + client.getNickname() + " " + target + " :Cannot send to channel\r\n");
+			sendMessageToClient(client.getFd(), ":" + _name + " 404 " + client.getNickname() + " " + target + " :Cannot send to channel");
 			return;
 		}
 		if (msg.getTrailing().empty()) {
-			sendMessageToClient(client.getFd(), ":" + _name + " 412 " + client.getNickname() + " :No text to send\r\n");
+			sendMessageToClient(client.getFd(), ":" + _name + " 412 " + client.getNickname() + " :No text to send");
 			return ;
 		}
 		std::string message = client.getPrefix() + " PRIVMSG " + target + " :" + msg.getTrailing();
@@ -538,11 +538,11 @@ void Server::handlePrivmsg(const Message &msg, Client &client)
 	else {
 		int targetFd = getFdByNickname(target);
 		if (targetFd == -1) {
-			sendMessageToClient(client.getFd(), ":" + _name + " 401 " + client.getNickname() + " " + target + " :No such nick/channel\r\n");
+			sendMessageToClient(client.getFd(), ":" + _name + " 401 " + client.getNickname() + " " + target + " :No such nick/channel");
 			return;
 		}
 		if (msg.getTrailing().empty()) {
-			sendMessageToClient(client.getFd(), ":" + _name + " 412 " + client.getNickname() + " :No text to send\r\n");
+			sendMessageToClient(client.getFd(), ":" + _name + " 412 " + client.getNickname() + " :No text to send");
 			return ;
 		}
 		std::string message = client.getPrefix() + " PRIVMSG " + target + " :" + msg.getTrailing();
@@ -642,12 +642,24 @@ void Server::handleMode(const Message &msg, Client &client)
 
 /* ------------------------------------ Modes ----------------------------------- */
 
-// se non c'e' + metto adding flag di default
+static void addToAppliedModes(std::string &appliedModes, char &lastSign, bool adding, char mode)
+{
+    char sign = adding ? '+' : '-';
+    if (lastSign != sign) // aggiungo un segno solo se cambio
+	{
+        appliedModes += sign;
+        lastSign = sign;
+    }
+    appliedModes += mode;
+}
+
+// check operator gia' effettuato prima di chiamare questa funzione
 void Server::applyMode(const Message &msg, Channel &channel, Client &client)
 {
 	std::string appliedModes = "";
-	// dividere mode in flag e parametro
-	// se non inizia con + o - è sbagliato
+	std::string appliedParams = "";
+	char lastSign = 0;
+
 	std::string mode = msg.getParams()[1];
 	size_t paramIndex = 2; // indice del primo parametro dopo mode
 	
@@ -658,10 +670,7 @@ void Server::applyMode(const Message &msg, Channel &channel, Client &client)
 		std::cout << "param[" << i << "]: " << msg.getParams()[i] << std::endl;
 	}
 
-	// flag di default (+)
-	bool adding = true;
-
-	// check operator gia' effettuato prima di chiamare questa funzione
+	bool adding = true; // se manca, + di default
 	for (size_t i = 0; i < mode.size(); i++)
 	{
 		// cerco + o -
@@ -679,74 +688,88 @@ void Server::applyMode(const Message &msg, Channel &channel, Client &client)
 	 	if (mode[i] == 'i')
 		{
 			channel.setInviteOnly(adding);
+			addToAppliedModes(appliedModes, lastSign, adding, 'i');
 		}
 		else if (mode[i] == 't')
 		{
 			channel.setTopicRestricted(adding);
+			addToAppliedModes(appliedModes, lastSign, adding, 't');
 		}
 		else if (mode[i] == 'k')
 		{
 			if (adding)
 			{
 				if (paramIndex >= msg.getParams().size()) {
-					sendMessageToClient(client.getFd(), ":" + _name + " 461 " + client.getNickname() + " MODE :Not enough parameters\r\n");
+					sendMessageToClient(client.getFd(), ":" + _name + " 461 " + client.getNickname() + " MODE :Not enough parameters");
 					continue; // salta alla prossima iterazione del for
 				}
-				channel.setKey(msg.getParams()[paramIndex]);
+				std::string key = msg.getParams()[paramIndex];
 				paramIndex++;
+				
+				channel.setKey(key);
+				addToAppliedModes(appliedModes, lastSign, adding, 'k');
+				appliedParams += " " + key;
 			}
 			else
+			{
 				channel.setKey("");
+				addToAppliedModes(appliedModes, lastSign, adding, 'k');
+			}
 		}
 		else if (mode[i] == 'l')
 		{
 			//  +l 0 non è valido per togliere limite
+			// se ci sono utenti nel canale, gli utenti restano, quelli nuovi no
 			if (adding)
 			{
 				if (paramIndex >= msg.getParams().size()) {
-					sendMessageToClient(client.getFd(), ":" + _name + " 461 " + client.getNickname() + " MODE :Not enough parameters\r\n");
+					sendMessageToClient(client.getFd(), ":" + _name + " 461 " + client.getNickname() + " MODE :Not enough parameters");
 					continue;
 				}
 				std::string limitstr = msg.getParams()[paramIndex];
 				paramIndex++;
 				if (!channel.isValidLimit(limitstr)) {
-					sendMessageToClient(client.getFd(), ":" + _name + " 461 " + client.getNickname() + " MODE :Not enough parameters\r\n");
+					sendMessageToClient(client.getFd(), ":" + _name + " 461 " + client.getNickname() + " MODE :Not enough parameters");
 					continue;
 				}
 				size_t limit = atoi(limitstr.c_str());
 				channel.setUsersLimit(limit);
+				appliedParams += " " + limitstr;
 			}
 			else
 			{
 				channel.setUsersLimit(0);
 			}
+			addToAppliedModes(appliedModes, lastSign, adding, 'l');
 		}
 		else if (mode[i] == 'o')
 		{
 			// manca parametro
 			if (paramIndex >= msg.getParams().size()) {
-				sendMessageToClient(client.getFd(), ":" + _name + " 461 " + client.getNickname() + " MODE :Not enough parameters\r\n");
-				continue; // salta alla prossima iterazione del for
+				sendMessageToClient(client.getFd(), ":" + _name + " 461 " + client.getNickname() + " MODE :Not enough parameters");
+				continue;
 			}
-			if (!channel.isMember(msg.getParams()[paramIndex])) {
-				sendMessageToClient(client.getFd(), ":" + _name + " 441 " + msg.getParams()[paramIndex] + " " + channel.getName() + " :They aren't on that channel\r\n");
-				paramIndex++; // anche se il membro non è nel canale, devo comunque usare il parametro
-				continue; // salta alla prossima iterazione del for
-			}
+			// non e' membro
 			std::string member = msg.getParams()[paramIndex];
 			paramIndex++;
+			if (!channel.isMember(member)) {
+				sendMessageToClient(client.getFd(), ":" + _name + " 441 " + member + " " + channel.getName() + " :They aren't on that channel");
+				continue;
+			}
 			if (adding)
 				channel.addOperator(member);
 			else
 				channel.removeOperator(member);
+			appliedParams += " " + member;
+			addToAppliedModes(appliedModes, lastSign, adding, 'o');
 		}
 		else
 		{
 			sendMessageToClient(client.getFd(), ":" + _name + " 472 " + client.getNickname() + " :Unknown MODE flag");
-			return ;
+			continue;
 		}
 	}
-	broadcastMessageToChannel(":" + client.getPrefix() + " MODE " + channel.getName() + " " + appliedModes, channel, "");
+	broadcastMessageToChannel(":" + client.getPrefix() + " MODE " + channel.getName() + " " + appliedModes + "" + appliedParams, channel, "");
 }
 
 /* ------------------------------------ Operator actions ----------------------------------- */
@@ -1015,24 +1038,3 @@ bool Server::isValidChannelName(const std::string &channelName)
 	}
 	return true;
 }
-
-// bool	Server::isNick(const std::string& nick) {
-// 	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
-// 		if (it->second.getNickname() == nick) {
-// 			return true;
-// 		}
-// 	}
-// 	return false;
-// }
-
-// bool	Server::isChannel(const std::string& channel) {
-// 	for (std::vector<Channel>::const_iterator it = _channels.begin();
-// 		 it != _channels.end(); ++it)
-// 	{
-// 		if (it->getName() == channel)
-// 			return true;
-// 	}
-// 	return false;
-// }
-
-
