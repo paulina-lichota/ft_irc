@@ -6,14 +6,13 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/26 15:18:40 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/26 16:40:50 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 #include "Message.hpp"
 #include "signal.hpp"
-#include <cctype> // isspace()
 
 /*
 ** Inizializza il server: crea il socket, lo configura e lo mette in ascolto.
@@ -388,8 +387,9 @@ void Server::handleQuit(const Message &msg, Client &client) {
 	}
 	sendMessageToClient(client.getFd(), quitMessage);
 	std::cout << "[fd:" << client.getFd() << "] QUIT" << std::endl;
-	handleClientDisconnection(pollfdIndexByFd(client.getFd()));
-}
+	size_t idx = pollfdIndexByFd(client.getFd());
+	if (idx < _pollFds.size())
+		handleClientDisconnection(idx);}
 
 // es. client manda "JOIN #channel"
 //     server risponde "JOIN #channel"
@@ -464,7 +464,7 @@ void Server::handleJoin(const Message &msg, Client &client)
 			channel->removeInvited(client.getNickname());
 
 	// broadcast message di JOIN a tutti i membri del canale (compreso il nuovo membro)
-	const std::string message = ":" + client.getNickname() + " JOIN " + channelName; // da formattare meglio i messaggi
+	const std::string message = client.getPrefix() + " JOIN " + channelName; // da formattare meglio i messaggi
 	broadcastMessageToChannel(message, *channel, "");
 	std::string namesList = "";
 	const std::set<std::string> &members = channel->getMembers();
@@ -505,7 +505,7 @@ void Server::handlePrivmsg(const Message &msg, Client &client)
 			sendMessageToClient(client.getFd(), ":" + _name + " 412 " + client.getNickname() + " :No text to send\r\n");
 			return ;
 		}
-		std::string message = ":" + client.getNickname() + " PRIVMSG " + target + " :" + msg.getTrailing();
+		std::string message = client.getPrefix() + " PRIVMSG " + target + " :" + msg.getTrailing();
 		broadcastMessageToChannel(message, *channel, client.getNickname());
 	}
 	// ===================== NICK =====================
@@ -519,7 +519,7 @@ void Server::handlePrivmsg(const Message &msg, Client &client)
 			sendMessageToClient(client.getFd(), ":" + _name + " 412 " + client.getNickname() + " :No text to send\r\n");
 			return ;
 		}
-		std::string message = ":" + client.getNickname() + " PRIVMSG " + target + " :" + msg.getTrailing();
+		std::string message = client.getPrefix() + " PRIVMSG " + target + " :" + msg.getTrailing();
 		sendMessageToClient(targetFd, message);
 	}
 }
@@ -567,7 +567,7 @@ void Server::handleTopic(const Message &msg, Client &client)
 
 	// altri casi: puoi cambiarlo se non è topic restricted, o se sei operatore anche se è topic restricted
 	channel->setTopic(msg.getTrailing());
-	broadcastMessageToChannel(":" + client.getNickname() + " TOPIC " + channelName + " :" + msg.getTrailing(), *channel, "");
+	broadcastMessageToChannel(client.getPrefix() + " TOPIC " + channelName + " :" + msg.getTrailing(), *channel, "");
 }
 
 void Server::handleMode(const Message &msg, Client &client)
@@ -656,7 +656,7 @@ void Server::handleKick(const Message &msg, Client &client) {
 		return ;
 	}
 	// remove target client from channel and send KICK message to channel members (everyone, also sender)
-	std::string kickMessage = ":" + client.getNickname() + " KICK " + channelName + " " + targetNickname;
+	std::string kickMessage = client.getPrefix() + " KICK " + channelName + " " + targetNickname;
 	if (!msg.getTrailing().empty())
 		kickMessage += " :" + msg.getTrailing();
 	broadcastMessageToChannel(kickMessage, *channel, "");
