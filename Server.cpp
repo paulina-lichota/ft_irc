@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/26 09:29:40 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/26 09:35:56 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -342,11 +342,11 @@ void Server::handleUser(const Message &msg, Client &client) {
 void Server::handlePing(const Message &msg, Client &client)
 {
 	if (msg.getParams().empty()) {
-		sendMessageToClient(client.getFd(), "409 :No origin specified"); // ERR_NOORIGIN
+		sendMessageToClient(client.getFd(), ":" + _name + " 409 " + client.getNickname() + " :No origin specified"); // ERR_NOORIGIN
 		std::cout << "[fd:" << client.getFd() << "] PING → 409" << std::endl;
 		return;
 	}
-	std::string message = "PONG " + msg.getParams()[0];
+	std::string message = ":" + _name + " PONG " + _name + " " + msg.getParams()[0];
 	if (msg.getParams().size() > 1)
 		message += " " + msg.getParams()[1];
 	sendMessageToClient(client.getFd(), message);
