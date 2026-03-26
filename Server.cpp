@@ -6,7 +6,7 @@
 /*   By: francema <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/26 17:14:26 by francema         ###   ########.fr       */
+/*   Updated: 2026/03/26 17:22:07 by francema         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -701,7 +701,7 @@ void Server::handleInvite(const Message &msg, Client &client)
 		sendMessageToClient(client.getFd(), ":" + _name + " " + msg.getParams()[0] + " 443 " + msg.getParams()[1] + " :is already on channel");
 		return ;
 	}
-	if (ch->getModes() == "+i") {//CONTROLLO DEBOLE SERVE UN QUALCOSA CHE GESTISCA ANCHE +ik o +it ecc...
+	if (ch->getInviteOnly()) {//CONTROLLO DEBOLE SERVE UN QUALCOSA CHE GESTISCA ANCHE +ik o +it ecc...
 		if (!ch->isOperator(client.getNickname())) {
 			sendMessageToClient(client.getFd(), ":" + _name + " " + msg.getParams()[1] +" 482 :You're not channel operator");
 			return ;
