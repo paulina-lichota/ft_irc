@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/26 09:59:34 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/26 10:00:55 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,10 @@ Server::Server(const int port, const std::string &password) : _name(SERVER_NAME)
 
 Server::~Server() {
 	std::cout << "Chiusura server in corso..." << std::endl;
+	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+	{
+		sendMessageToClient(it->first, "ERROR :Server shutting down");
+	}
 	for (size_t i = 0; i < _pollFds.size(); i++)
 		close(_pollFds[i].fd);
 }
