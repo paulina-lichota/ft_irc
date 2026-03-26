@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/26 20:15:40 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/26 20:44:07 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -450,16 +450,14 @@ void Server::handleJoin(const Message &msg, Client &client)
 	}
 
 	// se channel protetto da key
-	if (channel->getKey().size() > 0)
+	if (!channel->getKey().empty())
 	{
-		// prendo secondo param
-		if (msg.getParams().size() == 1) {
-			sendMessageToClient(client.getFd(), "461 " + msg.getCommand() + " :Not enough parameters");
-			return ;
-		}
-		if (msg.getParams()[1] != channel->getKey()) {
-			sendMessageToClient(client.getFd(), "475 " + msg.getCommand() + " :Channel key is incorrect");
-			return ;
+		std::string key = "";
+		if (msg.getParams().size() > 1)
+			key = msg.getParams()[1];
+		if (key != channel->getKey()) {
+			sendMessageToClient(client.getFd(), ":" + _name + " 475 " + client.getNickname() + " " + channelName + " :Cannot join channel (+k)");
+			return;
 		}
 	}
 
