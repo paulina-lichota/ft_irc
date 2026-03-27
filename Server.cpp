@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/26 21:03:38 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/27 09:16:16 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,23 +72,28 @@ Server::~Server() {
 /*
 ** Main loop del server. Gira finché non arriva SIGINT (received_signal != 0).
 **
-** @poll        blocca finché almeno un fd ha un evento, o scade POLL_TIMEOUT
-** @EINTR       se poll() viene interrotto da un segnale, riprende il loop
+** @poll        blocca finché almeno un fd ha un evento (POLL_TIMEOUT = -1, infinito)
+** @ret < 0     errore reale o interruzione da segnale — in entrambi i casi esci
+**              se received_signal == 0 è un errore reale → stampa e break
+**              se received_signal != 0 è un segnale → break silenzioso
+** @ret == 0    timeout scaduto (impossibile con POLL_TIMEOUT = -1, gestito per robustezza)
 ** @_pollFds[0] è sempre il server socket — POLLIN su di esso significa nuova connessione
 ** @_pollFds[i] per i > 0 sono i client socket:
-**                POLLIN           → dati in arrivo → handleClientMessage()
+**                POLLIN            → dati in arrivo → handleClientMessage()
 **                POLLHUP | POLLERR → disconnessione o errore → handleClientDisconnection()
 */
 void	Server::run(){
 	while (received_signal == 0)
 	{
 		int ret = poll(&_pollFds[0], _pollFds.size(), POLL_TIMEOUT);
-		if (ret < 0) {
-			if (errno == EINTR)
-				continue;
-			std::cerr << RED <<"Error in poll()" << RESET << std::endl;
+		if (ret < 0)
+		{
+			if (received_signal == 0)
+				std::cerr << RED << "Error in poll()" << RESET << std::endl;
 			break;
 		}
+		if (ret == 0)
+			continue ;
 		if (_pollFds[0].revents & POLLIN)
 			handleNewConnection();
 		for (size_t i = 1; i < _pollFds.size(); i++) {
@@ -99,7 +104,6 @@ void	Server::run(){
 			else if (_pollFds[i].revents & (POLLHUP | POLLERR)) {
 				handleClientDisconnection(i);
 				i--;
-				//tolgo client dai canali
 			}
 		}
 	}
@@ -660,7 +664,7 @@ void Server::applyMode(const Message &msg, Channel &channel, Client &client)
 
 	std::string mode = msg.getParams()[1];
 	size_t paramIndex = 2; // indice del primo parametro dopo mode
-	
+
 	// stampo parametri per debug
 	std::cout << "mode: " << mode << std::endl;
 	for (size_t i = 0; i < msg.getParams().size(); i++)
@@ -682,7 +686,7 @@ void Server::applyMode(const Message &msg, Channel &channel, Client &client)
 			adding = false;
 			continue;
 		}
-		
+
 	 	if (mode[i] == 'i')
 		{
 			channel.setInviteOnly(adding);
@@ -703,7 +707,7 @@ void Server::applyMode(const Message &msg, Channel &channel, Client &client)
 				}
 				std::string key = msg.getParams()[paramIndex];
 				paramIndex++;
-				
+
 				channel.setKey(key);
 				addToAppliedModes(appliedModes, lastSign, adding, 'k');
 				appliedParams += " " + key;
