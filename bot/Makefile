@@ -3,8 +3,9 @@ NAME = bot
 CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror -Wshadow -std=c++98
 
-SRC = main.cpp \
-	Bot.cpp
+SRC = 	main.cpp \
+		Bot.cpp \
+		signal.cpp
 
 all: $(NAME)
 

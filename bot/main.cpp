@@ -6,11 +6,12 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/26 22:00:15 by plichota          #+#    #+#             */
-/*   Updated: 2026/03/27 15:30:12 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/27 15:48:13 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Bot.hpp"
+#include "signal.hpp"
 #include <iostream>
 #include <cstdlib>
 
@@ -19,6 +20,7 @@
 // ./bot 6667 pass "#42"
 int main(int argc, char **argv)
 {
+    init_signals();
     if (argc != 4) {
         std::cerr << "Usage: " << argv[0] << " <port> <password> <channel>" << std::endl;
         return (1);

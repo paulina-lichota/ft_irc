@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/26 21:47:20 by plichota          #+#    #+#             */
-/*   Updated: 2026/03/27 15:05:19 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/27 15:42:10 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 #include <string>
 #include <vector>
+
 
 class Bot
 {

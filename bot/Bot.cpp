@@ -6,11 +6,12 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/26 22:00:29 by plichota          #+#    #+#             */
-/*   Updated: 2026/03/27 15:29:40 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/27 15:57:12 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Bot.hpp"
+#include "signal.hpp"
 #include <iostream>
 #include <cstdlib> // atoi
 #include <unistd.h> // close()
@@ -165,27 +166,23 @@ void Bot::handlePrivmsg(const std::string &line)
 void Bot::handleLine(const std::string &line)
 {
     std::cout << "> " << line << std::endl;
-    if (line.find("PING") != std::string::npos)
+    if (line.find(" PING ") != std::string::npos)
         handlePong(line);
-    else if (line.find("NICK") != std::string::npos)
+    else if (line.find(" NICK ") != std::string::npos)
         handleNick(line);
-    else if (line.find("JOIN") != std::string::npos)
+    else if (line.find(" JOIN ") != std::string::npos)
         handleJoin(line);
-    else if (line.find("PRIVMSG") != std::string::npos)
+    else if (line.find(" PRIVMSG ") != std::string::npos)
         handlePrivmsg(line);
-    else if (line.find("464") != std::string::npos)
+    else if (line.find("464 ") != std::string::npos)
     {
         std::cerr << "Wrong password" << std::endl;
-        close(_fd);
-        _fd = -1;
-        exit(1);
+        throw std::runtime_error("Wrong password");
     }
-    else if (line.find("433") != std::string::npos)  // nick in uso
+    else if (line.find(" 433 ") != std::string::npos)  // nick in uso
     {
         std::cerr << "Nickname already in use" << std::endl;
-        close(_fd);
-        _fd = -1;
-        exit(1);
+        throw std::runtime_error("Nickname already in use");
     }
 }
 
@@ -194,7 +191,7 @@ void Bot::handleLoop()
     char temp[1024];
     std::string buffer;
 
-    while (true)
+    while (received_signal == 0)
     {
         int bytes = recv(_fd, temp, sizeof(temp) - 1, 0); // -1 per lo \0
         if (bytes <= 0) // connessione chiusa o errore
