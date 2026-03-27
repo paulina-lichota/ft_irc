@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/24 16:35:14 by plichota          #+#    #+#             */
-/*   Updated: 2026/03/24 17:14:14 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/27 15:57:55 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 volatile sig_atomic_t received_signal = 0;
 
 void handle_signal(int signum) {
-    std::cout << "\nRicevuto segnale " << signum << std::endl;
+    // std::cout << "\nRicevuto segnale " << signum << std::endl;
     if (signum == SIGINT || signum == SIGTERM)
         received_signal = signum;
 }
