@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/26 22:00:29 by plichota          #+#    #+#             */
-/*   Updated: 2026/03/27 18:13:45 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/27 18:17:37 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -143,8 +143,6 @@ void Bot::handleNick(const std::string &line)
 void Bot::handleJoin(const std::string &line)
 {
     std::string nick = line.substr(1, line.find('!') - 1);
-    if (isWarned(nick)) // gia' kickato e rijoina
-        kickUser(nick);
     if (nick != _name)
         sendMessageToChannel("Welcome " + nick + " 𒆜𓊉꧂");
 }
