@@ -82,3 +82,8 @@ PRIVMSG #42: ciao
 ## TO  IMPROVE:
 - [] logging messaggi sul client -> mandare prefix server
 - [] logging messaggi sul server -> mandare  info client + messaggi extra (non solo fd)
+
+- [] PARSING DA AGGIUSTARE??
+PRIVMSG #42 :ciao
+PRIVMSG #42: ciao
+:ircserv 403 nick #42: :No such channel

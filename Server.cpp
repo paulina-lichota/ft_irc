@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/27 11:48:34 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/27 17:56:02 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -794,6 +794,7 @@ void Server::handleKick(const Message &msg, Client &client)
 	}
 	std::string channelName = msg.getParams()[0];
 	Channel *channel = getChannelByName(channelName);
+	std::cout << "Channel name: " << channelName << std::endl;
 	// check if channel exists
 	if (channel == NULL)
 	{

@@ -27,7 +27,8 @@ Run
 
 Run client
 ```bash
-nc -C 127.0.0.1 6667
+nc -C 
+1 6667
 ```
 
 ## Connection from client
