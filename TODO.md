@@ -56,7 +56,7 @@
 - [ ] Test con nc — messaggi parziali
 - [X] Test con HexChat — connessione base
 - [X] Test con più client contemporanei
-- [ ] Test disconnessione brusca
+- [X] Test disconnessione brusca
 - [ ] Test tutti i comandi operatore
 - [ ] Test errori numerici
 

@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/27 10:21:55 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/27 11:48:34 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -778,37 +778,49 @@ void Server::applyMode(const Message &msg, Channel &channel, Client &client)
 
 /* ------------------------------------ Operator actions ----------------------------------- */
 
-void Server::handleKick(const Message &msg, Client &client) {
-	if (!client.getRegistered()) {
+void Server::handleKick(const Message &msg, Client &client)
+{
+	if (!client.getRegistered())
+	{
 		sendMessageToClient(client.getFd(), "451 :You have not registered");
 		std::cout << "[fd:" << client.getFd() << "] KICK → 451" << std::endl;
-		return ;
+		return;
 	}
-	if (msg.getParams().size() < 2) {
+	if (msg.getParams().size() < 2)
+	{
 		sendMessageToClient(client.getFd(), "461 " + msg.getCommand() + " :Not enough parameters");
 		std::cout << "[fd:" << client.getFd() << "] KICK → 461" << std::endl;
-		return ;
+		return;
 	}
 	std::string channelName = msg.getParams()[0];
 	Channel *channel = getChannelByName(channelName);
 	// check if channel exists
-	if (channel == NULL) {
+	if (channel == NULL)
+	{
 		sendMessageToClient(client.getFd(), "403 " + msg.getCommand() + " :No such channel");
 		std::cout << "[fd:" << client.getFd() << "] KICK → 403" << std::endl;
-		return ;
+		return;
+	}
+	// aggiungi questo PRIMA del check operatore
+	if (!channel->isMember(client.getNickname()))
+	{
+		sendMessageToClient(client.getFd(), "442 " + channelName + " :You're not on that channel");
+		return;
 	}
 	// check if client is operator of the channel
-	if (!channel->isOperator(client.getNickname())) {
+	if (!channel->isOperator(client.getNickname()))
+	{
 		sendMessageToClient(client.getFd(), "482 " + channelName + " :You're not channel operator");
 		std::cout << "[fd:" << client.getFd() << "] KICK → 482" << std::endl;
-		return ;
+		return;
 	}
-// check if target client is in the channel
+	// check if target client is in the channel
 	std::string targetNickname = msg.getParams()[1];
-	if (!channel->isMember(targetNickname)) {
+	if (!channel->isMember(targetNickname))
+	{
 		sendMessageToClient(client.getFd(), "441 " + targetNickname + " " + channelName + " :They aren't on that channel");
 		std::cout << "[fd:" << client.getFd() << "] KICK → 441" << std::endl;
-		return ;
+		return;
 	}
 	// remove target client from channel and send KICK message to channel members (everyone, also sender)
 	std::string kickMessage = client.getPrefix() + " KICK " + channelName + " " + targetNickname;
