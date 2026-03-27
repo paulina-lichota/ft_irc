@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/27 09:16:16 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/27 09:34:56 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -358,6 +358,7 @@ void Server::handleUser(const Message &msg, Client &client) {
 		std::cout << "[fd:" << client.getFd() << "] USER → 462" << std::endl;
 		return ;
 	}
+	client.setUsername(msg.getParams()[0]);
 	client.setRealname(msg.getTrailing());
 	if (!client.getNickname().empty()) {
 		client.setRegistered(true);
@@ -914,27 +915,29 @@ void Server::addPollFd(int fd) {
 	_pollFds.push_back(newPollFd);
 }
 
-void Server::sendMessageToClient(int fd, const std::string &message) {
+
+void Server::sendMessageToClient(int fd, const std::string &message)
+{
 	std::cout << BLUE << "[fd:" << fd << "] Sending: " << message << RESET << std::endl;
 	std::string msgWithCRLF = message + "\r\n";
 	const char *data = msgWithCRLF.c_str();
 	size_t total = msgWithCRLF.size();
 	size_t sent = 0;
-	while (sent < total) {
+	while (sent < total)
+	{
 		ssize_t n = send(fd, data + sent, total - sent, 0);
-		if (n < 0) {
-			if (errno == EINTR)
-			continue;
+		if (n < 0)
+		{
 			std::cerr << RED << "[fd:" << fd << "] send() error" << RESET << std::endl;
 			size_t idx = pollfdIndexByFd(fd);
 			if (idx < _pollFds.size())
 				handleClientDisconnection(idx);
-			return ;
+			return;
 		}
-			if (n == 0) // connessione chiusa dall'altro lato
-				break;
-			sent += n;
-		}
+		if (n == 0)
+			break; // connessione chiusa, esci dal loop ma non disconnettere forzatamente — poll() lo rileverà con POLLHUP
+		sent += n;
+	}
 }
 
 size_t Server::pollfdIndexByFd(int fd) {
