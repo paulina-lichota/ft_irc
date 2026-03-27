@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/26 22:00:29 by plichota          #+#    #+#             */
-/*   Updated: 2026/03/26 23:41:14 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/27 15:29:40 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@
 
 Bot::Bot(int port, const std::string &password, const std::string &channel) :
     _name("LouBottin"), _fd(-1), _port(port), _password(password),
-    _channel(channel)
+    _channel(channel), _warnedNicknames(), _fobiddenWords()
 {
     initForbiddenWords();
 }
@@ -57,6 +57,16 @@ void Bot::initForbiddenWords()
     _fobiddenWords.push_back("zio");
 }
 
+void Bot::updateNickname(const std::string &newNickname, const std::string &oldNickname)
+{
+    for (size_t i = 0; i < _warnedNicknames.size(); i++) {
+        if (_warnedNicknames[i] == oldNickname) {
+            _warnedNicknames[i] = newNickname;
+            return;
+        }
+    }
+}
+
 void Bot::joinChannel()
 {
     sendMessage("JOIN " + _channel);
@@ -69,11 +79,114 @@ void Bot::registerClient()
     sendMessage("USER " + _name + " 0 *");
 }
 
+void Bot::kickUser(const std::string &nick)
+{
+    sendMessage("KICK " + _name + " " + nick);
+}
+
 void Bot::sendMessage(const std::string &message)
 {
     std::string full = message + "\r\n";
     send(_fd, full.c_str(), full.size(), 0);
     std::cout << "> " << message << std::endl;
+}
+
+bool Bot::isWarned(const std::string &nick)
+{
+    for (size_t i = 0; i < _warnedNicknames.size(); i++) {
+        if (_warnedNicknames[i] == nick)
+            return true;
+    }
+    return false;
+}
+
+void Bot::addWarned(const std::string &nick)
+{
+    _warnedNicknames.push_back(nick);
+}
+
+void Bot::removeWarned(const std::string &nick)
+{
+    for (size_t i = 0; i < _warnedNicknames.size(); i++) {
+        if (_warnedNicknames[i] == nick) {
+            _warnedNicknames.erase(_warnedNicknames.begin() + i);
+            return;
+        }
+    }
+}
+
+void Bot::handlePong(const std::string &line)
+{
+    sendMessage("PONG " + line.substr(5));
+    return;
+}
+
+// :vecchionick!user@host NICK :nuovonick
+void Bot::handleNick(const std::string &line)
+{
+    std::string oldNick = line.substr(1, line.find('!') - 1);
+    std::string::size_type pos = line.rfind(':');
+    std::string newNick = line.substr(pos + 1);
+    updateNickname(oldNick, newNick);
+    return;
+}
+
+// :nick!user@host JOIN #canale
+void Bot::handleJoin(const std::string &line)
+{
+    std::string nick = line.substr(1, line.find('!') - 1);
+    if (nick != _name)
+        sendMessage("PRIVMSG " + _channel + " : ꧁𓊈𒆜Welcome " + nick + "𒆜𓊉꧂");
+}
+
+bool Bot::hasForbiddenWord(const std::string &message)
+{
+    std::string lower = message;
+    for (size_t i = 0; i < lower.size(); i++)
+        lower[i] = std::tolower(lower[i]);
+
+    for (size_t i = 0; i < _fobiddenWords.size(); i++) {
+        if (message.find(_fobiddenWords[i]) != std::string::npos)
+            return true;
+    }
+    return false;
+}
+
+// :nick!user@127.0.0.1 PRIVMSG #42 :ciao a tutti
+void Bot::handlePrivmsg(const std::string &line)
+{
+    std::string nick = line.substr(1, line.find('!') - 1);
+    std::string message = line.substr(line.find(':') + 1);
+    std::cout << message << std::endl;
+    if (hasForbiddenWord(message))
+        kickUser(nick);
+}
+
+void Bot::handleLine(const std::string &line)
+{
+    std::cout << "> " << line << std::endl;
+    if (line.find("PING") != std::string::npos)
+        handlePong(line);
+    else if (line.find("NICK") != std::string::npos)
+        handleNick(line);
+    else if (line.find("JOIN") != std::string::npos)
+        handleJoin(line);
+    else if (line.find("PRIVMSG") != std::string::npos)
+        handlePrivmsg(line);
+    else if (line.find("464") != std::string::npos)
+    {
+        std::cerr << "Wrong password" << std::endl;
+        close(_fd);
+        _fd = -1;
+        exit(1);
+    }
+    else if (line.find("433") != std::string::npos)  // nick in uso
+    {
+        std::cerr << "Nickname already in use" << std::endl;
+        close(_fd);
+        _fd = -1;
+        exit(1);
+    }
 }
 
 void Bot::handleLoop()
@@ -92,15 +205,13 @@ void Bot::handleLoop()
         std::string::size_type pos;
         while ((pos = buffer.find("\r\n")) != std::string::npos) // cerco fine messaggio
         {
-            // estraggo messaggio dal buffer
             std::string line = buffer.substr(0, pos);
             buffer.erase(0, pos + 2); // compreso \r\n
-            std::cout << "LINE: " << line << std::endl;
-            // TODO compare message with forbidden words and send warning if needed
-            // KICK if user has a warning already
+            handleLine(line);
         }
     }
 }
+
 
 void Bot::run()
 {
