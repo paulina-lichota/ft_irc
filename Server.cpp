@@ -6,9 +6,10 @@
 /*   By: francema <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/27 10:00:37 by francema         ###   ########.fr       */
+/*   Updated: 2026/03/27 10:02:58 by francema         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 
 #include "Server.hpp"
 #include "Client.hpp"
@@ -72,23 +73,28 @@ Server::~Server() {
 /*
 ** Main loop del server. Gira finché non arriva SIGINT (received_signal != 0).
 **
-** @poll        blocca finché almeno un fd ha un evento, o scade POLL_TIMEOUT
-** @EINTR       se poll() viene interrotto da un segnale, riprende il loop
+** @poll        blocca finché almeno un fd ha un evento (POLL_TIMEOUT = -1, infinito)
+** @ret < 0     errore reale o interruzione da segnale — in entrambi i casi esci
+**              se received_signal == 0 è un errore reale → stampa e break
+**              se received_signal != 0 è un segnale → break silenzioso
+** @ret == 0    timeout scaduto (impossibile con POLL_TIMEOUT = -1, gestito per robustezza)
 ** @_pollFds[0] è sempre il server socket — POLLIN su di esso significa nuova connessione
 ** @_pollFds[i] per i > 0 sono i client socket:
-**                POLLIN           → dati in arrivo → handleClientMessage()
+**                POLLIN            → dati in arrivo → handleClientMessage()
 **                POLLHUP | POLLERR → disconnessione o errore → handleClientDisconnection()
 */
 void	Server::run(){
 	while (received_signal == 0)
 	{
 		int ret = poll(&_pollFds[0], _pollFds.size(), POLL_TIMEOUT);
-		if (ret < 0) {
-			if (errno == EINTR)
-				continue;
-			std::cerr << RED <<"Error in poll()" << RESET << std::endl;
+		if (ret < 0)
+		{
+			if (received_signal == 0)
+				std::cerr << RED << "Error in poll()" << RESET << std::endl;
 			break;
 		}
+		if (ret == 0)
+			continue ;
 		if (_pollFds[0].revents & POLLIN)
 			handleNewConnection();
 		for (size_t i = 1; i < _pollFds.size(); i++) {
@@ -99,7 +105,6 @@ void	Server::run(){
 			else if (_pollFds[i].revents & (POLLHUP | POLLERR)) {
 				handleClientDisconnection(i);
 				i--;
-				//tolgo client dai canali
 			}
 		}
 	}
@@ -354,6 +359,7 @@ void Server::handleUser(const Message &msg, Client &client) {
 		std::cout << "[fd:" << client.getFd() << "] USER → 462" << std::endl;
 		return ;
 	}
+	client.setUsername(msg.getParams()[0]);
 	client.setRealname(msg.getTrailing());
 	if (!client.getNickname().empty()) {
 		client.setRegistered(true);
@@ -767,7 +773,7 @@ void Server::applyMode(const Message &msg, Channel &channel, Client &client)
 			continue;
 		}
 	}
-	broadcastMessageToChannel(":" + client.getPrefix() + " MODE " + channel.getName() + " " + appliedModes + "" + appliedParams, channel, "");
+	broadcastMessageToChannel(client.getPrefix() + " MODE " + channel.getName() + " " + appliedModes + "" + appliedParams, channel, "");
 }
 
 /* ------------------------------------ Operator actions ----------------------------------- */
@@ -910,27 +916,29 @@ void Server::addPollFd(int fd) {
 	_pollFds.push_back(newPollFd);
 }
 
-void Server::sendMessageToClient(int fd, const std::string &message) {
+
+void Server::sendMessageToClient(int fd, const std::string &message)
+{
 	std::cout << BLUE << "[fd:" << fd << "] Sending: " << message << RESET << std::endl;
 	std::string msgWithCRLF = message + "\r\n";
 	const char *data = msgWithCRLF.c_str();
 	size_t total = msgWithCRLF.size();
 	size_t sent = 0;
-	while (sent < total) {
+	while (sent < total)
+	{
 		ssize_t n = send(fd, data + sent, total - sent, 0);
-		if (n < 0) {
-			if (errno == EINTR)
-			continue;
+		if (n < 0)
+		{
 			std::cerr << RED << "[fd:" << fd << "] send() error" << RESET << std::endl;
 			size_t idx = pollfdIndexByFd(fd);
 			if (idx < _pollFds.size())
 				handleClientDisconnection(idx);
-			return ;
+			return;
 		}
-			if (n == 0) // connessione chiusa dall'altro lato
-				break;
-			sent += n;
-		}
+		if (n == 0)
+			break; // connessione chiusa, esci dal loop ma non disconnettere forzatamente — poll() lo rileverà con POLLHUP
+		sent += n;
+	}
 }
 
 size_t Server::pollfdIndexByFd(int fd) {
