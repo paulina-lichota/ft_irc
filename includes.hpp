@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/21 21:17:58 by cwannhed          #+#    #+#             */
-/*   Updated: 2026/03/26 16:32:41 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/27 14:01:59 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,6 @@
 # include <netinet/in.h> // struct sockaddr_in
 # include <fcntl.h> // fcntl()
 # include <poll.h> // poll(), struct pollfd
-# include <cerrno> // errno
 # include <arpa/inet.h> // inet_ntoa()
 # include <set> // std::set
 # include <cctype> // isspace()
