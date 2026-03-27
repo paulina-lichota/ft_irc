@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/26 22:00:29 by plichota          #+#    #+#             */
-/*   Updated: 2026/03/27 18:04:46 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/27 18:13:45 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -143,8 +143,10 @@ void Bot::handleNick(const std::string &line)
 void Bot::handleJoin(const std::string &line)
 {
     std::string nick = line.substr(1, line.find('!') - 1);
+    if (isWarned(nick)) // gia' kickato e rijoina
+        kickUser(nick);
     if (nick != _name)
-        sendMessage("PRIVMSG " + _channel + " : ꧁𓊈𒆜 Welcome " + nick + " 𒆜𓊉꧂");
+        sendMessageToChannel("Welcome " + nick + " 𒆜𓊉꧂");
 }
 
 bool Bot::hasForbiddenWord(const std::string &message)
@@ -172,7 +174,7 @@ void Bot::handlePrivmsg(const std::string &line)
             kickUser(nick);
         else
         {
-            sendMessage("Warning: " + nick + " used a forbidden word 🕱");
+            sendMessageToChannel("Warning: " + nick + " used a forbidden word 🕱");
             _warnedNicknames.push_back(nick);
         }
     }
