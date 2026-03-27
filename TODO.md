@@ -40,18 +40,18 @@
 - [X] TOPIC (lettura)
 
 ## Fase 4 — Operatori
-- [.] KICK // wip caro
+- [X] KICK
 - [X] INVITE // da modificare i messaggi di errore (per hexchat)
 - [X] KICK
 - [X] INVITE
 - [X] Test con nc — messaggi parziali
 - [X] TOPIC (modifica)
 - [X] MODE (lettura)
-- [ ] MODE +i
-- [ ] MODE +t
-- [ ] MODE +k
-- [ ] MODE +o
-- [ ] MODE +l
+- [X] MODE +i
+- [X] MODE +t
+- [X] MODE +k
+- [X] MODE +o
+- [X] MODE +l
 
 ## Fase 5 — Test
 - [X] Test con nc — messaggi parziali
@@ -82,8 +82,3 @@ PRIVMSG #42: ciao
 ## TO  IMPROVE:
 - [] logging messaggi sul client -> mandare prefix server
 - [] logging messaggi sul server -> mandare  info client + messaggi extra (non solo fd)
-
-- [] PARSING DA AGGIUSTARE??
-PRIVMSG #42 :ciao
-PRIVMSG #42: ciao
-:ircserv 403 nick #42: :No such channel
