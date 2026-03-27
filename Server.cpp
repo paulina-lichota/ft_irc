@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/27 09:34:56 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/27 09:49:09 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -772,7 +772,7 @@ void Server::applyMode(const Message &msg, Channel &channel, Client &client)
 			continue;
 		}
 	}
-	broadcastMessageToChannel(":" + client.getPrefix() + " MODE " + channel.getName() + " " + appliedModes + "" + appliedParams, channel, "");
+	broadcastMessageToChannel(client.getPrefix() + " MODE " + channel.getName() + " " + appliedModes + "" + appliedParams, channel, "");
 }
 
 /* ------------------------------------ Operator actions ----------------------------------- */
