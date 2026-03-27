@@ -6,7 +6,7 @@
 /*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/27 09:49:09 by cwannhed         ###   ########.fr       */
+/*   Updated: 2026/03/27 10:19:57 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -821,49 +821,57 @@ void Server::handleKick(const Message &msg, Client &client) {
 
 void Server::handleInvite(const Message &msg, Client &client)
 {
-	if (msg.getParams().empty()) {
+	if (msg.getParams().empty())
+	{
 		sendMessageToClient(client.getFd(), ":" + _name + " 461 " + msg.getCommand() + " :Not enough parameters");
-		return ;
+		return;
 	}
-	if (msg.getParams().size() != 2) {
+	if (msg.getParams().size() != 2)
+	{
 		sendMessageToClient(client.getFd(), ":" + _name + " 472 " + msg.getCommand() + " :wrong number of params");
-		return ;
+		return;
 	}
-	if (!isValidNickname(msg.getParams()[0])){
+	if (!isValidNickname(msg.getParams()[0]))
+	{
 		sendMessageToClient(client.getFd(), ":" + _name + " 432 " + client.getNickname() + " :Erroneus nickname");
-		return ;
+		return;
 	}
-	if (!isValidChannelName(msg.getParams()[1])) {
+	if (!isValidChannelName(msg.getParams()[1]))
+	{
 		sendMessageToClient(client.getFd(), ":" + _name + " 476 " + client.getNickname() + " :ERR_BADCHANMASK");
-		return ;
+		return;
 	}
-	if (getFdByNickname(msg.getParams()[0]) == -1) {
-		sendMessageToClient(client.getFd(), ":" + _name + " 401 " + client.getNickname() +  " :No such nick/channel");
-		return ;
+	if (getFdByNickname(msg.getParams()[0]) == -1)
+	{
+		sendMessageToClient(client.getFd(), ":" + _name + " 401 " + client.getNickname() + " :No such nick/channel");
+		return;
 	}
 	Channel *ch = getChannelByName(msg.getParams()[1]);
-	if (ch == NULL) {
-		sendMessageToClient(client.getFd(), ":" + _name + " 403 " + msg.getParams()[1] +  " :No such channel");
-		return ;
+	if (ch == NULL)
+	{
+		sendMessageToClient(client.getFd(), ":" + _name + " 403 " + msg.getParams()[1] + " :No such channel");
+		return;
 	}
-	if (!ch->isMember(client.getNickname())) {
-		sendMessageToClient(client.getFd(), ":" + _name + " 442 " + msg.getParams()[1] +  " :You're not on that channel");
-		return ;
+	if (!ch->isMember(client.getNickname()))
+	{
+		sendMessageToClient(client.getFd(), ":" + _name + " 442 " + msg.getParams()[1] + " :You're not on that channel");
+		return;
 	}
-	if (ch->isMember(msg.getParams()[0])) {
-		sendMessageToClient(client.getFd(), ":" + _name + " " + msg.getParams()[0] + " 443 " + msg.getParams()[1] + " :is already on channel");
-		return ;
+	// prima controlla permessi
+	if (ch->getInviteOnly() && !ch->isOperator(client.getNickname()))
+	{
+		sendMessageToClient(client.getFd(), ":" + _name + " 482 " + client.getNickname() + " " + msg.getParams()[1] + " :You're not channel operator");
+		return;
 	}
-	if (ch->getInviteOnly()) {
-		if (!ch->isOperator(client.getNickname())) {
-			sendMessageToClient(client.getFd(), ":" + _name + " " + msg.getParams()[1] +" 482 :You're not channel operator");
-			return ;
-		}
+	// poi controlla se già membro
+	if (ch->isMember(msg.getParams()[0]))
+	{
+		sendMessageToClient(client.getFd(), ":" + _name + " 443 " + client.getNickname() + " " + msg.getParams()[0] + " " + msg.getParams()[1] + " :is already on channel");
+		return;
 	}
 	ch->addInvited(msg.getParams()[0]);
 	sendMessageToClient(client.getFd(), ":" + _name + " 341 " + client.getNickname() + " " + msg.getParams()[0] + " " + msg.getParams()[1]);
-	Client user = _clients[getFdByNickname(msg.getParams()[0])];
-	sendMessageToClient(getFdByNickname(msg.getParams()[0]), ":" + client.getNickname() + "!" + user.getUsername() + "@" + user.getHostname() + " INVITE " + msg.getParams()[0] + " " + msg.getParams()[1]);
+	sendMessageToClient(getFdByNickname(msg.getParams()[0]), client.getPrefix() + " INVITE " + msg.getParams()[0] + " " + msg.getParams()[1]);
 }
 
 /* ------------------------------------ Channel ----------------------------------- */
