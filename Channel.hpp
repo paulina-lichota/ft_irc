@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: cwannhed <cwannhed@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/24 17:55:39 by plichota          #+#    #+#             */
-/*   Updated: 2026/03/26 19:06:19 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/27 19:43:30 by cwannhed         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,17 +48,17 @@ class Channel
 
 		bool getTopicRestricted() const;
 		void setTopicRestricted(bool restricted); // only op
-	
+
 		const std::string &getTopic() const;
 		void setTopic(const std::string& topic); // if _topicRestricted, only op
 
 		bool getInviteOnly() const;
 		void setInviteOnly(bool inviteOnly); // only op
-		
+
 		size_t getUsersLimit() const;
 		void setUsersLimit(size_t limit); // only op
 
-		std::string getModes() const; // TODO test
+		std::string getModes() const;
 
 		// Membri
 		void addMember(const std::string &nickname);
@@ -70,7 +70,7 @@ class Channel
 		// Operatori
 		void addOperator(const std::string &nickname); // only op, or first member that creates the channel
 		void removeOperator(const std::string &nickname); // only op
-		bool isOperator(const std::string &nickname) const; 
+		bool isOperator(const std::string &nickname) const;
 		size_t getOperatorCount() const;
 		const std::set<std::string> &getOperators() const;
 
@@ -80,7 +80,7 @@ class Channel
 		void removeInvited(const std::string &nickname); // rimuovi dopo il JOIN
 
 		void printChannelInfo();
-		
+
 		bool isValidLimit(const std::string &str);
 };
 
