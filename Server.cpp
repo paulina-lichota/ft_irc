@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: francema <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2026/03/26 21:03:38 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/27 10:00:37 by francema         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -660,7 +660,7 @@ void Server::applyMode(const Message &msg, Channel &channel, Client &client)
 
 	std::string mode = msg.getParams()[1];
 	size_t paramIndex = 2; // indice del primo parametro dopo mode
-	
+
 	// stampo parametri per debug
 	std::cout << "mode: " << mode << std::endl;
 	for (size_t i = 0; i < msg.getParams().size(); i++)
@@ -682,7 +682,7 @@ void Server::applyMode(const Message &msg, Channel &channel, Client &client)
 			adding = false;
 			continue;
 		}
-		
+
 	 	if (mode[i] == 'i')
 		{
 			channel.setInviteOnly(adding);
@@ -703,7 +703,7 @@ void Server::applyMode(const Message &msg, Channel &channel, Client &client)
 				}
 				std::string key = msg.getParams()[paramIndex];
 				paramIndex++;
-				
+
 				channel.setKey(key);
 				addToAppliedModes(appliedModes, lastSign, adding, 'k');
 				appliedParams += " " + key;
