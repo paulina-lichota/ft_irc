@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/26 21:47:20 by plichota          #+#    #+#             */
-/*   Updated: 2026/03/27 15:42:10 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/27 18:04:43 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,7 @@ class Bot
         void joinChannel();
         void registerClient();
         void sendMessage(const std::string &message);
+        void sendMessageToChannel(const std::string &message);
         void handleLoop();
 
         void updateNickname(const std::string &newNickname, const std::string &oldNickname);

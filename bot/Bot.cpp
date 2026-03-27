@@ -6,7 +6,7 @@
 /*   By: plichota <plichota@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/26 22:00:29 by plichota          #+#    #+#             */
-/*   Updated: 2026/03/27 15:57:12 by plichota         ###   ########.fr       */
+/*   Updated: 2026/03/27 18:04:46 by plichota         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,13 +82,20 @@ void Bot::registerClient()
 
 void Bot::kickUser(const std::string &nick)
 {
-    sendMessage("KICK " + _name + " " + nick);
+    sendMessage("KICK " + _channel + " " + nick);
 }
 
 void Bot::sendMessage(const std::string &message)
 {
     std::string full = message + "\r\n";
     send(_fd, full.c_str(), full.size(), 0);
+    std::cout << "> " << message << std::endl;
+}
+
+void Bot::sendMessageToChannel(const std::string &message)
+{
+    std::string msg = "PRIVMSG " + _channel + " :" + message + "\r\n";
+    send(_fd, msg.c_str(), msg.size(), 0); // aggiungi PRIVMSG _channel
     std::cout << "> " << message << std::endl;
 }
 
@@ -137,7 +144,7 @@ void Bot::handleJoin(const std::string &line)
 {
     std::string nick = line.substr(1, line.find('!') - 1);
     if (nick != _name)
-        sendMessage("PRIVMSG " + _channel + " : ꧁𓊈𒆜Welcome " + nick + "𒆜𓊉꧂");
+        sendMessage("PRIVMSG " + _channel + " : ꧁𓊈𒆜 Welcome " + nick + " 𒆜𓊉꧂");
 }
 
 bool Bot::hasForbiddenWord(const std::string &message)
@@ -160,7 +167,15 @@ void Bot::handlePrivmsg(const std::string &line)
     std::string message = line.substr(line.find(':') + 1);
     std::cout << message << std::endl;
     if (hasForbiddenWord(message))
-        kickUser(nick);
+    {
+        if (isWarned(nick))
+            kickUser(nick);
+        else
+        {
+            sendMessage("Warning: " + nick + " used a forbidden word 🕱");
+            _warnedNicknames.push_back(nick);
+        }
+    }
 }
 
 void Bot::handleLine(const std::string &line)
@@ -179,7 +194,7 @@ void Bot::handleLine(const std::string &line)
         std::cerr << "Wrong password" << std::endl;
         throw std::runtime_error("Wrong password");
     }
-    else if (line.find(" 433 ") != std::string::npos)  // nick in uso
+    else if (line.find(" 433 ") != std::string::npos)  // nick del bot gia' in uso
     {
         std::cerr << "Nickname already in use" << std::endl;
         throw std::runtime_error("Nickname already in use");
